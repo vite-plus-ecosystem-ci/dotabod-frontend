@@ -10,3 +10,29 @@ allowBuilds:
   lefthook: true
   prisma: true
   sharp: true
+catalog:
+  vite: npm:@voidzero-dev/vite-plus-core@0.0.0-commit.7ebf81e43af581194844e8fe18f65ed2eb544642
+  vitest: 4.1.11
+  vite-plus: 0.0.0-commit.7ebf81e43af581194844e8fe18f65ed2eb544642
+  '@vitest/coverage-v8': 4.1.11
+overrides:
+  vite@*: 'catalog:'
+  vitest@*: 'catalog:'
+peerDependencyRules:
+  allowAny:
+    - vite
+    - vitest
+  allowedVersions:
+    vite: '*'
+    vitest: '*'
+minimumReleaseAgeExclude:
+  - '@voidzero-dev/vite-plus-core@0.0.0-commit.7ebf81e43af581194844e8fe18f65ed2eb544642'
+  - '@voidzero-dev/vite-plus-darwin-arm64@0.0.0-commit.7ebf81e43af581194844e8fe18f65ed2eb544642'
+  - '@voidzero-dev/vite-plus-darwin-x64@0.0.0-commit.7ebf81e43af581194844e8fe18f65ed2eb544642'
+  - '@voidzero-dev/vite-plus-linux-arm64-gnu@0.0.0-commit.7ebf81e43af581194844e8fe18f65ed2eb544642'
+  - '@voidzero-dev/vite-plus-linux-arm64-musl@0.0.0-commit.7ebf81e43af581194844e8fe18f65ed2eb544642'
+  - '@voidzero-dev/vite-plus-linux-x64-gnu@0.0.0-commit.7ebf81e43af581194844e8fe18f65ed2eb544642'
+  - '@voidzero-dev/vite-plus-linux-x64-musl@0.0.0-commit.7ebf81e43af581194844e8fe18f65ed2eb544642'
+  - '@voidzero-dev/vite-plus-win32-arm64-msvc@0.0.0-commit.7ebf81e43af581194844e8fe18f65ed2eb544642'
+  - '@voidzero-dev/vite-plus-win32-x64-msvc@0.0.0-commit.7ebf81e43af581194844e8fe18f65ed2eb544642'
+  - vite-plus@0.0.0-commit.7ebf81e43af581194844e8fe18f65ed2eb544642
