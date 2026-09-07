@@ -1,6 +1,6 @@
 // @ts-nocheck
 import type { Prisma } from '@prisma/client'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 import { processEventIdempotently } from '@/lib/stripe/utils/idempotency'
 

@@ -2,7 +2,7 @@ import type { Session } from 'next-auth'
 import type { SessionContextValue } from 'next-auth/react'
 import type { NextRouter } from 'next/router'
 import type { SWRResponse } from 'swr'
-import { vi } from 'vitest'
+import { vi } from 'vite-plus/test'
 
 type AuthenticatedSession = Extract<SessionContextValue, { status: 'authenticated' }>
 type StreamStatus = { stream_online: boolean }
