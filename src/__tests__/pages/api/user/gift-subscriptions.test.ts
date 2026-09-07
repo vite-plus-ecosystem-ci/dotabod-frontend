@@ -1,7 +1,7 @@
 import type { GiftSubscription, Subscription, User } from '@prisma/client'
 import { getServerSession } from 'next-auth'
 import { createMocks } from 'node-mocks-http'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 import prisma from '@/lib/db'
 import handler from '@/pages/api/user/gift-subscriptions'

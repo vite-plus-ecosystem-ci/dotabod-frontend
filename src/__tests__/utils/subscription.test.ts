@@ -1,6 +1,6 @@
 import { SubscriptionStatus, SubscriptionTier, TransactionType } from '@prisma/client'
 import type { Subscription } from '@prisma/client'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vite-plus/test'
 
 import prisma from '@/lib/db'
 import { getBillingSummaryInfo, getSubscription } from '@/utils/subscription'

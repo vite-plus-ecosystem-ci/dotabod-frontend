@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 import { aggregateGiftDuration, calculateGiftEndDate } from '@/lib/gift-subscription'
 import { isInGracePeriod } from '@/utils/subscription'
