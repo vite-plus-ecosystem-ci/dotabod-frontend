@@ -7,7 +7,7 @@ import { z } from 'zod'
 
 const repositoryRoot = path.resolve(import.meta.dirname, '../..')
 const baselinePath = path.join(import.meta.dirname, 'oxlint-baseline.json')
-const oxlintExecutable = path.join(repositoryRoot, 'node_modules/.bin/oxlint')
+const vitePlusExecutable = path.join(repositoryRoot, 'node_modules/.bin/vp')
 const toolTsconfigPath = 'tools/quality/tsconfig.json'
 const verifierPath = 'tools/quality/verify-oxlint-baseline.ts'
 const verifierTestPath = 'tools/quality/verify-oxlint-baseline.test.ts'
@@ -506,7 +506,7 @@ export const compareDiagnostics = (
 }
 
 const runCommand = (args: string[]) => {
-  const result = spawnSync(oxlintExecutable, args, {
+  const result = spawnSync(vitePlusExecutable, ['lint', ...args], {
     cwd: repositoryRoot,
     encoding: 'utf-8',
     maxBuffer: 128 * 1024 * 1024,
