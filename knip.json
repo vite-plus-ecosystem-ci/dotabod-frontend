@@ -3,5 +3,8 @@
   "ignore": [".agents/**", "public/styles/obs-compat.css"],
   "ignoreBinaries": ["doppler"],
   "ignoreDependencies": ["jsr", "npm"],
+  "oxlint": {
+    "config": ["oxlint.config.ts", "oxlint.deno.config.ts", "vite.config.ts"]
+  },
   "entry": ["scripts/**/*.{ts,mjs}", "supabase/functions/**/*.ts"]
 }
