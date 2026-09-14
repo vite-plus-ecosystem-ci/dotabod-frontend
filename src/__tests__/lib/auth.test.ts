@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 // oxlint-disable-next-line anti-slop/no-module-mocking -- Simulates the API-route initialization failure that previously took down the auth module through a circular import.
 vi.mock(import('@/pages/api/get-moderated-channels'), () => {
