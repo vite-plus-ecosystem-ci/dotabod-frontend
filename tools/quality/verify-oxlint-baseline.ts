@@ -545,9 +545,10 @@ const runTarget = (target: Target, paths?: string[]): OxlintDiagnostic[] => {
   try {
     return reportSchema.parse(JSON.parse(result.stdout)).diagnostics
   } catch (error) {
-    throw new Error(`Oxlint did not produce a valid JSON report for ${target.name}`, {
-      cause: error,
-    })
+    throw new Error(
+      `Oxlint did not produce a valid JSON report for ${target.name}: ${result.stderr}\n${result.stdout.slice(-4096)}`,
+      { cause: error },
+    )
   }
 }
 
