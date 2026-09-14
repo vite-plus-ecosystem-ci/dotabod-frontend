@@ -22772,26 +22772,6 @@
         "severity": "error"
       }
     },
-    "2adeabc4c62c26188408c94389c1fea8fd8f688c78c17c7c805d79c09a3f693b": {
-      "count": 1,
-      "summary": {
-        "code": "typescript(TS2554)",
-        "file": "vitest.setup.ts",
-        "labels": [
-          {
-            "context": {
-              "current": "this.$disconnect = vi.fn().mockResolvedValue()",
-              "next": "this.cards = {",
-              "previous": "const MockPrismaMongoClient = function MockPrismaMongoClient(this: Record<string, unknown>) {"
-            },
-            "span": "mockResolvedValue",
-            "text": ""
-          }
-        ],
-        "message": "Expected 1 arguments, but got 0.",
-        "severity": "error"
-      }
-    },
     "2ae3046bd0fc17522d9ac1612c3cb34c0e523a287f42062d87db46d760acbc43": {
       "count": 1,
       "summary": {
@@ -132226,7 +132206,7 @@
     }
   },
   "policy": {
-    "oxlintVersion": "Version: 1.81.0",
+    "oxlintVersion": "Version: 1.82.0",
     "targets": [
       {
         "config": "oxlint.config.ts",

@@ -1,6 +1,6 @@
 import * as matchers from '@testing-library/jest-dom/matchers'
 import React from 'react'
-import { expect, vi } from 'vitest'
+import { expect, vi } from 'vite-plus/test'
 
 expect.extend(matchers)
 
@@ -16,7 +16,8 @@ vi.mock('framer-motion', () => ({
 // Mock the Prisma Mongo client
 vi.mock('.prisma-mongo/client', () => {
   const MockPrismaMongoClient = function MockPrismaMongoClient(this: Record<string, unknown>) {
-    this.$disconnect = vi.fn().mockResolvedValue()
+    // oxlint-disable-next-line unicorn/no-useless-undefined -- mockResolvedValue requires an argument.
+    this.$disconnect = vi.fn().mockResolvedValue(undefined)
     this.cards = {
       findUnique: vi.fn().mockResolvedValue({ id: 'mock-card-id' }),
     }

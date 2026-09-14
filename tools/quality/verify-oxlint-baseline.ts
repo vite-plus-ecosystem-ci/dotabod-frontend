@@ -1,13 +1,22 @@
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import path from 'node:path'
 
 import { z } from 'zod'
 
 const repositoryRoot = path.resolve(import.meta.dirname, '../..')
 const baselinePath = path.join(import.meta.dirname, 'oxlint-baseline.json')
-const oxlintExecutable = path.join(repositoryRoot, 'node_modules/.bin/oxlint')
+const toolchainRequire = createRequire(import.meta.resolve('vite-plus/package.json'))
+const oxlintExecutable = path.join(
+  path.dirname(toolchainRequire.resolve('oxlint/package.json')),
+  'bin/oxlint',
+)
+const tsgolintExecutable = path.join(
+  path.dirname(toolchainRequire.resolve('oxlint-tsgolint/package.json')),
+  'bin/tsgolint.js',
+)
 const toolTsconfigPath = 'tools/quality/tsconfig.json'
 const verifierPath = 'tools/quality/verify-oxlint-baseline.ts'
 const verifierTestPath = 'tools/quality/verify-oxlint-baseline.test.ts'
@@ -506,9 +515,13 @@ export const compareDiagnostics = (
 }
 
 const runCommand = (args: string[]) => {
-  const result = spawnSync(oxlintExecutable, args, {
+  const env: NodeJS.ProcessEnv = { ...process.env, OXLINT_TSGOLINT_PATH: tsgolintExecutable }
+  // These targets use standalone Oxc configs, rather than the Vite config format.
+  delete env.VP_VERSION
+  const result = spawnSync(process.execPath, [oxlintExecutable, ...args], {
     cwd: repositoryRoot,
     encoding: 'utf-8',
+    env,
     maxBuffer: 128 * 1024 * 1024,
   })
   if (result.error !== undefined) {
@@ -532,9 +545,10 @@ const runTarget = (target: Target, paths?: string[]): OxlintDiagnostic[] => {
   try {
     return reportSchema.parse(JSON.parse(result.stdout)).diagnostics
   } catch (error) {
-    throw new Error(`Oxlint did not produce a valid JSON report for ${target.name}`, {
-      cause: error,
-    })
+    throw new Error(
+      `Oxlint did not produce a valid JSON report for ${target.name}: ${result.stderr}\n${result.stdout.slice(-4096)}`,
+      { cause: error },
+    )
   }
 }
 

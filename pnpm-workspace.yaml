@@ -1,5 +1,9 @@
 nodeLinker: hoisted
 
+# Keep the existing module-mocking policy for the migrated test imports.
+patchedDependencies:
+  ultracite@7.10.8: patches/ultracite@7.10.8.patch
+
 publicHoistPattern:
   - '*prisma*'
 
@@ -8,6 +12,11 @@ publicHoistPattern:
 peerDependencyRules:
   allowedVersions:
     tailwindcss: '4.3.3'
+    vite: '*'
+    vitest: '*'
+  allowAny:
+    - vite
+    - vitest
 
 allowBuilds:
   '@prisma/client': true
@@ -16,3 +25,22 @@ allowBuilds:
   lefthook: true
   prisma: true
   sharp: true
+catalog:
+  vite: npm:@voidzero-dev/vite-plus-core@0.0.0-commit.6b5bbcaf494b963b67950e77a7673de21ba9c6d5
+  vitest: 4.1.11
+  vite-plus: 0.0.0-commit.6b5bbcaf494b963b67950e77a7673de21ba9c6d5
+  '@vitest/coverage-v8': 4.1.11
+overrides:
+  vite@*: 'catalog:'
+  vitest@*: 'catalog:'
+minimumReleaseAgeExclude:
+  - '@voidzero-dev/vite-plus-core@0.0.0-commit.6b5bbcaf494b963b67950e77a7673de21ba9c6d5'
+  - '@voidzero-dev/vite-plus-darwin-arm64@0.0.0-commit.6b5bbcaf494b963b67950e77a7673de21ba9c6d5'
+  - '@voidzero-dev/vite-plus-darwin-x64@0.0.0-commit.6b5bbcaf494b963b67950e77a7673de21ba9c6d5'
+  - '@voidzero-dev/vite-plus-linux-arm64-gnu@0.0.0-commit.6b5bbcaf494b963b67950e77a7673de21ba9c6d5'
+  - '@voidzero-dev/vite-plus-linux-arm64-musl@0.0.0-commit.6b5bbcaf494b963b67950e77a7673de21ba9c6d5'
+  - '@voidzero-dev/vite-plus-linux-x64-gnu@0.0.0-commit.6b5bbcaf494b963b67950e77a7673de21ba9c6d5'
+  - '@voidzero-dev/vite-plus-linux-x64-musl@0.0.0-commit.6b5bbcaf494b963b67950e77a7673de21ba9c6d5'
+  - '@voidzero-dev/vite-plus-win32-arm64-msvc@0.0.0-commit.6b5bbcaf494b963b67950e77a7673de21ba9c6d5'
+  - '@voidzero-dev/vite-plus-win32-x64-msvc@0.0.0-commit.6b5bbcaf494b963b67950e77a7673de21ba9c6d5'
+  - vite-plus@0.0.0-commit.6b5bbcaf494b963b67950e77a7673de21ba9c6d5
