@@ -1,5 +1,9 @@
 nodeLinker: hoisted
 
+# Keep the existing module-mocking policy for the migrated test imports.
+patchedDependencies:
+  ultracite@7.10.8: patches/ultracite@7.10.8.patch
+
 publicHoistPattern:
   - '*prisma*'
 

@@ -49,6 +49,8 @@ jobs:
           DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/dotabod_test
           DIRECT_URL: postgresql://postgres:postgres@127.0.0.1:5432/dotabod_test
           RUN_STRIPE_WEBHOOK_POSTGRES_TESTS: 'true'
+      - name: Run vp check
+        run: pnpm exec vp check
       - name: Run quality checks
         run: pnpm quality
       - name: Run tests
