@@ -1,6 +1,6 @@
 import { act, cleanup, render, renderHook } from '@testing-library/react'
 import { useState } from 'react'
-import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { useAegis, useRoshan } from '@/lib/hooks/rosh'
 import { useSocket } from '@/lib/hooks/use-socket'

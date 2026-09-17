@@ -1,6 +1,6 @@
 import axios, { AxiosHeaders } from 'axios'
 import type { AxiosAdapter, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { getMatchData } from '@/lib/hooks/open-dota-api'
 

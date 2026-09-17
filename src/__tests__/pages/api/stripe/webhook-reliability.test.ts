@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { createMocks } from 'node-mocks-http'
 import { Stripe } from 'stripe'
-import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { WebhookHandlerDependencies } from '@/pages/api/stripe/webhook'
 import { createWebhookHandler } from '@/pages/api/stripe/webhook'

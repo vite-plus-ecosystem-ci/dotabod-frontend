@@ -3,7 +3,7 @@ import { useEffect } from 'react'
 import { hydrateRoot } from 'react-dom/client'
 import type { Root } from 'react-dom/client'
 import { renderToString } from 'react-dom/server'
-import { describe, expect, it, vi } from 'vite-plus/test'
+import { describe, expect, it, vi } from 'vitest'
 
 import { HydratedContent } from '../hydrated-content'
 

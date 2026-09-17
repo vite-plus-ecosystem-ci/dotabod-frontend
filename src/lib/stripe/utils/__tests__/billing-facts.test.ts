@@ -1,5 +1,5 @@
 import { Stripe } from 'stripe'
-import { describe, expect, it } from 'vite-plus/test'
+import { describe, expect, it } from 'vitest'
 
 import { extractBillingFacts } from '../billing-facts'
 

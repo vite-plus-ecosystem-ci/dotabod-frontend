@@ -1,5 +1,5 @@
 import { createMocks } from 'node-mocks-http'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { calculateGiftEndDate } from '@/lib/gift-subscription'
 import handler, { config } from '@/pages/api/stripe/webhook'

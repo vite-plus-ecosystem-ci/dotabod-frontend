@@ -1,5 +1,5 @@
 import { createMocks } from 'node-mocks-http'
-import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import handler from '@/pages/api/stripe/portal'
 

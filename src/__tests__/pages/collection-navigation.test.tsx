@@ -1,5 +1,5 @@
 import { render, screen, within } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import prisma from '@/lib/db'
 import SetPage from '@/pages/[username]/set'

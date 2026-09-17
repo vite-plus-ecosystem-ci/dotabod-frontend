@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { internalServerErrorResponse } from '../../../../supabase/functions/sync-hubspot/error-response'
 
