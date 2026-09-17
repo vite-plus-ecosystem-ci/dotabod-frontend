@@ -1,6 +1,6 @@
 import fetch from 'node-fetch'
 import { createMocks } from 'node-mocks-http'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 import { getServerSession } from '@/lib/api/get-server-session'
 import { subscriptionToValue, syncHubSpotContact } from '@/lib/hubspot'

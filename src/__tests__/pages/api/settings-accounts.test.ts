@@ -1,7 +1,7 @@
 import type { NextApiHandler } from 'next'
 import type { Session } from 'next-auth'
 import { createMocks } from 'node-mocks-http'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 import { getServerSession } from '@/lib/api/get-server-session'
 import prisma from '@/lib/db'

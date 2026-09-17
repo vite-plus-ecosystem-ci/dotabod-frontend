@@ -2,7 +2,7 @@
 
 import { GraphQLClient } from 'graphql-request'
 import { createMocks } from 'node-mocks-http'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 import { get7TVUser } from '@/lib/7tv'
 import { getServerSession } from '@/lib/api/get-server-session'

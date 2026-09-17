@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import useSWR from 'swr'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 import { createMockRouter, createMockSWR } from '@/__tests__/utils/mock-factories'
 import { UserAccountNav } from '@/components/user-account-nav'
