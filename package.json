@@ -118,6 +118,7 @@
     "happy-dom": "^20.9.0",
     "knip": "^6.34.0",
     "node-mocks-http": "^1.17.2",
+    "oxlint": "1.83.0",
     "oxlint-plugin-react-doctor": "0.9.13",
     "postcss": "^8.5.23",
     "prisma": "^6.19.0",
