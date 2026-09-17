@@ -128992,11 +128992,11 @@
     }
   },
   "policy": {
-    "oxlintVersion": "Version: 1.81.0",
+    "oxlintVersion": "Version: 1.83.0",
     "targets": [
       {
         "config": "oxlint.config.ts",
-        "configSha256": "47e261cec189a995d53afb92d66cbb73cc787d712b4820fc70985bbdf62c6777",
+        "configSha256": "7d6226271a7183830063b10a25b4dc7842e140ff166701bfd795ae8c1fe3e091",
         "files": [
           "next.config.mjs",
           "oxfmt.config.ts",
@@ -129499,13 +129499,17 @@
         "name": "app",
         "resolvedConfigSha256": "c0c208cf8ff15b7a20a4ff6c86712ca2289f5ddd5cc522b89a67ca1704f34fa1",
         "scope": {
-          "ignorePatterns": ["supabase/functions/**"],
-          "paths": ["."]
+          "ignorePatterns": [
+            "supabase/functions/**"
+          ],
+          "paths": [
+            "."
+          ]
         }
       },
       {
         "config": "oxlint.deno.config.ts",
-        "configSha256": "081b2c77b1b0b0cd395e99fe89d62d01d7820994b3f9e22367a6ff9dddf56fbd",
+        "configSha256": "10309039a156eabc375afb3378cba987b48c7b7fa673be5ad431e04b48cbed30",
         "files": [
           "supabase/functions/sync-hubspot/error-response.ts",
           "supabase/functions/sync-hubspot/index.ts"
@@ -129523,7 +129527,9 @@
         "resolvedConfigSha256": "6c6c97b8453def202543b9830ada155f95f1a1375685319dec3501f5c65e59a1",
         "scope": {
           "ignorePatterns": [],
-          "paths": ["supabase/functions"]
+          "paths": [
+            "supabase/functions"
+          ]
         }
       }
     ],

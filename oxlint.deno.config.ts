@@ -1,4 +1,3 @@
-import { defineConfig } from 'oxlint'
 import antiSlop from 'ultracite/oxlint/anti-slop'
 import core from 'ultracite/oxlint/core'
 import { jsPluginSettings, selectJsPlugins } from 'ultracite/oxlint/js-plugins'
@@ -6,12 +5,13 @@ import next from 'ultracite/oxlint/next'
 import nextJsPlugins from 'ultracite/oxlint/next/js-plugins'
 import react from 'ultracite/oxlint/react'
 import vitest from 'ultracite/oxlint/vitest'
+import type { OxlintConfig } from 'vite-plus/lint'
 
 const jsPlugins = selectJsPlugins(['sonarjs', 'react-doctor'])
 
 // Supabase Edge Functions run in Deno rather than the app's Node/tsgo runtime.
 // Keep the same Ultracite policy but skip only incompatible type analysis.
-export default defineConfig({
+const config: OxlintConfig = {
   env: {
     worker: true,
   },
@@ -47,4 +47,6 @@ export default defineConfig({
     'typescript/no-explicit-any': 'error',
   },
   settings: jsPluginSettings,
-})
+}
+
+export default config
