@@ -1,6 +1,7 @@
 import ultracite from 'ultracite/oxfmt'
+import type { FormatConfig } from 'vite-plus/fmt'
 
-export default {
+const config: FormatConfig = {
   ...ultracite,
   ignorePatterns: [
     ...(ultracite.ignorePatterns ?? []),
@@ -16,3 +17,5 @@ export default {
   singleQuote: true,
   trailingComma: 'all',
 }
+
+export default config
