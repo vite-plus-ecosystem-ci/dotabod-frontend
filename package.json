@@ -120,6 +120,7 @@
     "node-mocks-http": "^1.17.2",
     "oxlint": "1.83.0",
     "oxlint-plugin-react-doctor": "0.9.13",
+    "oxlint-tsgolint": "7.0.2001",
     "postcss": "^8.5.23",
     "prisma": "^6.19.0",
     "sharp": "0.35.4",
