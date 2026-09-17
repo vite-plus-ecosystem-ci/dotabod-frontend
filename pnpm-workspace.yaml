@@ -1,23 +1,23 @@
 nodeLinker: hoisted
 
 publicHoistPattern:
-  - "*prisma*"
+  - '*prisma*'
 
 # typography's peer expression includes the non-semver token `insiders`;
 # allow the installed stable Tailwind release until upstream corrects it.
 peerDependencyRules:
   allowedVersions:
-    tailwindcss: "4.3.3"
-    vite: "*"
-    vitest: "*"
+    tailwindcss: '4.3.3'
+    vite: '*'
+    vitest: '*'
   allowAny:
     - vite
     - vitest
 
 allowBuilds:
-  "@prisma/client": true
-  "@prisma/engines": true
-  "@sentry/cli": true
+  '@prisma/client': true
+  '@prisma/engines': true
+  '@sentry/cli': true
   lefthook: true
   prisma: true
   sharp: true
@@ -25,18 +25,18 @@ catalog:
   vite: npm:@voidzero-dev/vite-plus-core@0.0.0-commit.fba044cf40fea5a7bf4a2ee97822f174eab33dfa
   vitest: 4.1.11
   vite-plus: 0.0.0-commit.fba044cf40fea5a7bf4a2ee97822f174eab33dfa
-  "@vitest/coverage-v8": 4.1.11
+  '@vitest/coverage-v8': 4.1.11
 overrides:
-  vite@*: "catalog:"
-  vitest@*: "catalog:"
+  vite@*: 'catalog:'
+  vitest@*: 'catalog:'
 minimumReleaseAgeExclude:
-  - "@voidzero-dev/vite-plus-core@0.0.0-commit.fba044cf40fea5a7bf4a2ee97822f174eab33dfa"
-  - "@voidzero-dev/vite-plus-darwin-arm64@0.0.0-commit.fba044cf40fea5a7bf4a2ee97822f174eab33dfa"
-  - "@voidzero-dev/vite-plus-darwin-x64@0.0.0-commit.fba044cf40fea5a7bf4a2ee97822f174eab33dfa"
-  - "@voidzero-dev/vite-plus-linux-arm64-gnu@0.0.0-commit.fba044cf40fea5a7bf4a2ee97822f174eab33dfa"
-  - "@voidzero-dev/vite-plus-linux-arm64-musl@0.0.0-commit.fba044cf40fea5a7bf4a2ee97822f174eab33dfa"
-  - "@voidzero-dev/vite-plus-linux-x64-gnu@0.0.0-commit.fba044cf40fea5a7bf4a2ee97822f174eab33dfa"
-  - "@voidzero-dev/vite-plus-linux-x64-musl@0.0.0-commit.fba044cf40fea5a7bf4a2ee97822f174eab33dfa"
-  - "@voidzero-dev/vite-plus-win32-arm64-msvc@0.0.0-commit.fba044cf40fea5a7bf4a2ee97822f174eab33dfa"
-  - "@voidzero-dev/vite-plus-win32-x64-msvc@0.0.0-commit.fba044cf40fea5a7bf4a2ee97822f174eab33dfa"
+  - '@voidzero-dev/vite-plus-core@0.0.0-commit.fba044cf40fea5a7bf4a2ee97822f174eab33dfa'
+  - '@voidzero-dev/vite-plus-darwin-arm64@0.0.0-commit.fba044cf40fea5a7bf4a2ee97822f174eab33dfa'
+  - '@voidzero-dev/vite-plus-darwin-x64@0.0.0-commit.fba044cf40fea5a7bf4a2ee97822f174eab33dfa'
+  - '@voidzero-dev/vite-plus-linux-arm64-gnu@0.0.0-commit.fba044cf40fea5a7bf4a2ee97822f174eab33dfa'
+  - '@voidzero-dev/vite-plus-linux-arm64-musl@0.0.0-commit.fba044cf40fea5a7bf4a2ee97822f174eab33dfa'
+  - '@voidzero-dev/vite-plus-linux-x64-gnu@0.0.0-commit.fba044cf40fea5a7bf4a2ee97822f174eab33dfa'
+  - '@voidzero-dev/vite-plus-linux-x64-musl@0.0.0-commit.fba044cf40fea5a7bf4a2ee97822f174eab33dfa'
+  - '@voidzero-dev/vite-plus-win32-arm64-msvc@0.0.0-commit.fba044cf40fea5a7bf4a2ee97822f174eab33dfa'
+  - '@voidzero-dev/vite-plus-win32-x64-msvc@0.0.0-commit.fba044cf40fea5a7bf4a2ee97822f174eab33dfa'
   - vite-plus@0.0.0-commit.fba044cf40fea5a7bf4a2ee97822f174eab33dfa

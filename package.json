@@ -126,8 +126,8 @@
     "typescript": "7.0.2",
     "ultracite": "7.10.8",
     "vite": "catalog:",
-    "vitest": "catalog:",
-    "vite-plus": "catalog:"
+    "vite-plus": "catalog:",
+    "vitest": "catalog:"
   },
   "browserslist": "defaults, not ie <= 11",
   "packageManager": "pnpm@11.24.0"
