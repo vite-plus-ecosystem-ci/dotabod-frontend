@@ -1,7 +1,6 @@
-import { defineConfig } from 'oxfmt'
 import ultracite from 'ultracite/oxfmt'
 
-export default defineConfig({
+export default {
   ...ultracite,
   ignorePatterns: [
     ...(ultracite.ignorePatterns ?? []),
@@ -16,4 +15,4 @@ export default defineConfig({
   semi: false,
   singleQuote: true,
   trailingComma: 'all',
-})
+}
