@@ -54,6 +54,13 @@ export default defineConfig({
       'jsx-a11y/prefer-tag-over-role': 'off',
       'nextjs/no-img-element': 'off',
       'react-hooks/exhaustive-deps': 'off',
+      // These React Compiler rules reject established project patterns. Keep the
+      // existing compiler as the source of truth for these cases in smoke CI.
+      'react/immutability': 'off',
+      'react/purity': 'off',
+      'react/refs': 'off',
+      'react/set-state-in-effect': 'off',
+      'react/static-components': 'off',
       'typescript/no-explicit-any': 'error',
       'vite-plus/prefer-vite-plus-imports': 'error',
     },
