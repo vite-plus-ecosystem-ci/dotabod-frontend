@@ -54,3 +54,4 @@ public/install.ps1
 .claude/skills/
 .agents/skills/
 .playwright-mcp/
+.vitest/
