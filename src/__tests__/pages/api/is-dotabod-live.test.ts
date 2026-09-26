@@ -1,137 +1,137 @@
 // @ts-nocheck
 
-import { captureException } from '@sentry/nextjs'
-import type { NextApiHandler } from 'next'
-import { createMocks } from 'node-mocks-http'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { captureException } from "@sentry/nextjs";
+import type { NextApiHandler } from "next";
+import { createMocks } from "node-mocks-http";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import prisma from '@/lib/db'
-import handler from '@/pages/api/is-dotabod-live'
+import prisma from "@/lib/db";
+import handler from "@/pages/api/is-dotabod-live";
 
 // Mock the prisma client
-vi.mock('@/lib/db', () => ({
+vi.mock("@/lib/db", () => ({
   default: {
     user: {
       findFirst: vi.fn(),
     },
   },
-}))
+}));
 
 // Mock Sentry
-vi.mock('@sentry/nextjs', () => ({
+vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
-}))
+}));
 
 // Mock the withMethods middleware
-vi.mock('@/lib/api-middlewares/with-methods', () => ({
+vi.mock("@/lib/api-middlewares/with-methods", () => ({
   withMethods: (_methods: string[], handler: NextApiHandler) => handler,
-}))
+}));
 
 // Import the mocked modules
 
-describe('is-dotabod-live API', () => {
+describe("is-dotabod-live API", () => {
   beforeEach(() => {
-    vi.resetAllMocks()
-  })
+    vi.resetAllMocks();
+  });
 
   afterEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
-  it('returns 500 for non-GET methods', async () => {
+  it("returns 500 for non-GET methods", async () => {
     const { req, res } = createMocks({
-      method: 'POST',
-    })
+      method: "POST",
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(500)
-  })
+    expect(res.statusCode).toBe(500);
+  });
 
-  it('returns true when dotabod is live', async () => {
+  it("returns true when dotabod is live", async () => {
     const { req, res } = createMocks({
-      method: 'GET',
-    })
+      method: "GET",
+    });
 
     // Mock the prisma response
-    const mockPrismaResponse = { stream_online: true }
-    vi.mocked(prisma.user.findFirst).mockResolvedValue(mockPrismaResponse)
+    const mockPrismaResponse = { stream_online: true };
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(mockPrismaResponse);
 
-    await handler(req, res)
+    await handler(req, res);
 
     expect(prisma.user.findFirst).toHaveBeenCalledWith({
       select: {
         stream_online: true,
       },
       where: {
-        name: 'dotabod',
+        name: "dotabod",
       },
-    })
-    expect(res._getJSONData()).toBeTruthy()
-  })
+    });
+    expect(res._getJSONData()).toBeTruthy();
+  });
 
-  it('returns false when dotabod is not live', async () => {
+  it("returns false when dotabod is not live", async () => {
     const { req, res } = createMocks({
-      method: 'GET',
-    })
+      method: "GET",
+    });
 
     // Mock the prisma response
-    vi.mocked(prisma.user.findFirst).mockResolvedValue({ stream_online: false })
+    vi.mocked(prisma.user.findFirst).mockResolvedValue({ stream_online: false });
 
-    await handler(req, res)
+    await handler(req, res);
 
     expect(prisma.user.findFirst).toHaveBeenCalledWith({
       select: {
         stream_online: true,
       },
       where: {
-        name: 'dotabod',
+        name: "dotabod",
       },
-    })
-    expect(res._getJSONData()).toBeFalsy()
-  })
+    });
+    expect(res._getJSONData()).toBeFalsy();
+  });
 
-  it('returns false when dotabod is not found', async () => {
+  it("returns false when dotabod is not found", async () => {
     const { req, res } = createMocks({
-      method: 'GET',
-    })
+      method: "GET",
+    });
 
     // Mock the prisma response to return null
-    vi.mocked(prisma.user.findFirst).mockResolvedValue(null)
+    vi.mocked(prisma.user.findFirst).mockResolvedValue(null);
 
-    await handler(req, res)
+    await handler(req, res);
 
     expect(prisma.user.findFirst).toHaveBeenCalledWith({
       select: {
         stream_online: true,
       },
       where: {
-        name: 'dotabod',
+        name: "dotabod",
       },
-    })
-    expect(res._getJSONData()).toBeFalsy()
-  })
+    });
+    expect(res._getJSONData()).toBeFalsy();
+  });
 
-  it('handles database errors correctly', async () => {
+  it("handles database errors correctly", async () => {
     const { req, res } = createMocks({
-      method: 'GET',
-    })
+      method: "GET",
+    });
 
     // Mock the prisma response to throw an error
-    const mockError = new Error('Database error')
+    const mockError = new Error("Database error");
 
     // Use mockRejectedValue instead of mockImplementation
-    vi.mocked(prisma.user.findFirst).mockRejectedValueOnce(mockError)
+    vi.mocked(prisma.user.findFirst).mockRejectedValueOnce(mockError);
 
     // Need to await to let the promise rejection propagate
-    await handler(req, res)
+    await handler(req, res);
 
     // Wait for any pending promises to resolve (like the .catch handler)
-    await new Promise(process.nextTick)
+    await new Promise(process.nextTick);
 
-    expect(prisma.user.findFirst).toHaveBeenCalledOnce()
+    expect(prisma.user.findFirst).toHaveBeenCalledOnce();
     // The handler should be passing the error to captureException
-    expect(captureException).toHaveBeenCalledOnce()
-    expect(res.statusCode).toBe(500)
-  })
-})
+    expect(captureException).toHaveBeenCalledOnce();
+    expect(res.statusCode).toBe(500);
+  });
+});

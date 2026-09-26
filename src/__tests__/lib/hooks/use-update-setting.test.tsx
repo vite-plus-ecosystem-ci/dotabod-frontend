@@ -1,18 +1,18 @@
-import * as Sentry from '@sentry/nextjs'
-import { act, render, waitFor } from '@testing-library/react'
-import useSWR from 'swr'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import * as Sentry from "@sentry/nextjs";
+import { act, render, waitFor } from "@testing-library/react";
+import useSWR from "swr";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { useUpdate, useUpdateAccount, useUpdateSetting } from '@/lib/hooks/use-update-setting'
+import { useUpdate, useUpdateAccount, useUpdateSetting } from "@/lib/hooks/use-update-setting";
 
-const mutateMock = vi.hoisted(() => vi.fn())
-const messageOpenMock = vi.hoisted(() => vi.fn())
+const mutateMock = vi.hoisted(() => vi.fn());
+const messageOpenMock = vi.hoisted(() => vi.fn());
 
-vi.mock('next/router', () => ({
-  useRouter: () => ({ isReady: true, pathname: '/dashboard', query: {} }),
-}))
+vi.mock("next/router", () => ({
+  useRouter: () => ({ isReady: true, pathname: "/dashboard", query: {} }),
+}));
 
-vi.mock('antd', () => ({
+vi.mock("antd", () => ({
   App: {
     useApp: () => ({
       message: {
@@ -20,331 +20,331 @@ vi.mock('antd', () => ({
       },
     }),
   },
-}))
+}));
 
-vi.mock('swr', () => ({
+vi.mock("swr", () => ({
   default: vi.fn(),
   useSWRConfig: () => ({
     mutate: mutateMock,
   }),
-}))
+}));
 
-vi.mock('@sentry/nextjs', () => ({
+vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
-}))
+}));
 
 // useUpdateSetting gates writes on tier access via useSubscription; stub it. tip is
 // a FREE chatter, so access is granted regardless of the value returned here.
-vi.mock('@/hooks/use-subscription', () => ({
+vi.mock("@/hooks/use-subscription", () => ({
   useSubscription: () => ({ subscription: null }),
-}))
+}));
 
 describe(useUpdate, () => {
   beforeEach(() => {
-    mutateMock.mockResolvedValue(undefined)
-  })
+    mutateMock.mockResolvedValue(undefined);
+  });
 
   afterEach(() => {
-    vi.restoreAllMocks()
-    mutateMock.mockReset()
-    messageOpenMock.mockReset()
-    vi.mocked(Sentry.captureException).mockReset()
-  })
+    vi.restoreAllMocks();
+    mutateMock.mockReset();
+    messageOpenMock.mockReset();
+    vi.mocked(Sentry.captureException).mockReset();
+  });
 
-  it('patches custom setting endpoints while mutating the main settings cache', () => {
+  it("patches custom setting endpoints while mutating the main settings cache", () => {
     const updateRef: {
       current?: ReturnType<
         typeof useUpdate<Record<string, unknown>, { value: boolean }>
-      >['updateSetting']
-    } = {}
+      >["updateSetting"];
+    } = {};
 
     vi.mocked(useSWR).mockReturnValue({
-      data: { settings: [{ key: 'showRankImage', value: true }] },
+      data: { settings: [{ key: "showRankImage", value: true }] },
       error: undefined,
-    } as ReturnType<typeof useSWR>)
+    } as ReturnType<typeof useSWR>);
 
-    global.fetch = vi.fn().mockResolvedValue({ ok: true })
+    global.fetch = vi.fn().mockResolvedValue({ ok: true });
 
     const TestComponent = () => {
       const { updateSetting } = useUpdate<Record<string, unknown>, { value: boolean }>({
         dataTransform: (data, newValue) => ({
           ...data,
-          settings: [{ key: 'showRankImage', value: newValue.value }],
+          settings: [{ key: "showRankImage", value: newValue.value }],
         }),
-        path: '/api/settings',
-      })
-      updateRef.current = updateSetting
-      return null
-    }
+        path: "/api/settings",
+      });
+      updateRef.current = updateSetting;
+      return null;
+    };
 
-    render(<TestComponent />)
+    render(<TestComponent />);
 
     act(() => {
-      updateRef.current?.({ value: false }, '/api/settings/showRankImage')
-    })
+      updateRef.current?.({ value: false }, "/api/settings/showRankImage");
+    });
 
     expect(global.fetch).toHaveBeenCalledWith(
-      '/api/settings/showRankImage',
+      "/api/settings/showRankImage",
       expect.objectContaining({
         body: JSON.stringify({ value: false }),
-        method: 'PATCH',
+        method: "PATCH",
         signal: expect.any(AbortSignal),
       }),
-    )
+    );
     expect(mutateMock).toHaveBeenCalledWith(
-      '/api/settings',
+      "/api/settings",
       expect.any(Promise),
       expect.objectContaining({
         optimisticData: {
-          settings: [{ key: 'showRankImage', value: false }],
+          settings: [{ key: "showRankImage", value: false }],
         },
       }),
-    )
-  })
+    );
+  });
 
-  it('toggles isSaving while a mutation is in flight', async () => {
+  it("toggles isSaving while a mutation is in flight", async () => {
     const refs: {
       updateSetting?: ReturnType<
         typeof useUpdate<Record<string, unknown>, { value: boolean }>
-      >['updateSetting']
-      isSaving?: boolean
-    } = {}
-    const savingHistory: boolean[] = []
+      >["updateSetting"];
+      isSaving?: boolean;
+    } = {};
+    const savingHistory: boolean[] = [];
 
     vi.mocked(useSWR).mockReturnValue({
       data: { settings: [] },
       error: undefined,
-    } as ReturnType<typeof useSWR>)
+    } as ReturnType<typeof useSWR>);
 
-    let resolveFetch: ((value: Response) => void) | undefined
+    let resolveFetch: ((value: Response) => void) | undefined;
     global.fetch = vi.fn(
       async () =>
         new Promise<Response>((resolve) => {
-          resolveFetch = resolve
+          resolveFetch = resolve;
         }),
-    )
+    );
 
     // SWR's mutate awaits the updateFn promise; we mimic that so the finally block runs.
     mutateMock.mockImplementation(async (_path, promise) => {
-      await promise
-    })
+      await promise;
+    });
 
     const TestComponent = () => {
       const result = useUpdate<Record<string, unknown>, { value: boolean }>({
         dataTransform: (data, newValue) => ({ ...data, value: newValue.value }),
-        path: '/api/settings',
-      })
-      refs.updateSetting = result.updateSetting
-      refs.isSaving = result.isSaving
-      savingHistory.push(result.isSaving)
-      return null
-    }
+        path: "/api/settings",
+      });
+      refs.updateSetting = result.updateSetting;
+      refs.isSaving = result.isSaving;
+      savingHistory.push(result.isSaving);
+      return null;
+    };
 
-    render(<TestComponent />)
+    render(<TestComponent />);
 
-    expect(refs.isSaving).toBeFalsy()
+    expect(refs.isSaving).toBeFalsy();
 
     act(() => {
-      refs.updateSetting?.({ value: true }, '/api/settings/bets')
-    })
+      refs.updateSetting?.({ value: true }, "/api/settings/bets");
+    });
 
     await waitFor(() => {
-      expect(refs.isSaving).toBeTruthy()
-    })
+      expect(refs.isSaving).toBeTruthy();
+    });
 
     await act(async () => {
-      resolveFetch?.({ ok: true } as Response)
-    })
+      resolveFetch?.({ ok: true } as Response);
+    });
 
     await waitFor(() => {
-      expect(refs.isSaving).toBeFalsy()
-    })
+      expect(refs.isSaving).toBeFalsy();
+    });
 
-    expect(savingHistory).toContain(true)
-  })
+    expect(savingHistory).toContain(true);
+  });
 
-  it('reports failed mutations to Sentry and shows a status-aware toast', async () => {
+  it("reports failed mutations to Sentry and shows a status-aware toast", async () => {
     const updateRef: {
       current?: ReturnType<
         typeof useUpdate<Record<string, unknown>, { value: boolean }>
-      >['updateSetting']
-    } = {}
+      >["updateSetting"];
+    } = {};
 
     vi.mocked(useSWR).mockReturnValue({
       data: { settings: [] },
       error: undefined,
-    } as ReturnType<typeof useSWR>)
+    } as ReturnType<typeof useSWR>);
 
-    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 403 })
+    global.fetch = vi.fn().mockResolvedValue({ ok: false, status: 403 });
 
-    let updatePromise: Promise<unknown> | undefined
+    let updatePromise: Promise<unknown> | undefined;
     mutateMock.mockImplementation(async (_path, promise) => {
-      updatePromise = promise
-      await promise.catch(() => {})
-    })
+      updatePromise = promise;
+      await promise.catch(() => {});
+    });
 
     const TestComponent = () => {
       const { updateSetting } = useUpdate<Record<string, unknown>, { value: boolean }>({
         dataTransform: (data, newValue) => ({ ...data, value: newValue.value }),
-        path: '/api/settings',
-      })
-      updateRef.current = updateSetting
-      return null
-    }
+        path: "/api/settings",
+      });
+      updateRef.current = updateSetting;
+      return null;
+    };
 
-    render(<TestComponent />)
+    render(<TestComponent />);
 
     act(() => {
-      updateRef.current?.({ value: true }, '/api/settings/bets')
-    })
+      updateRef.current?.({ value: true }, "/api/settings/bets");
+    });
 
     await act(async () => {
-      await updatePromise?.catch(() => {})
-    })
+      await updatePromise?.catch(() => {});
+    });
 
     expect(Sentry.captureException).toHaveBeenCalledWith(
       expect.any(Error),
       expect.objectContaining({
-        extra: expect.objectContaining({ status: 403, path: '/api/settings/bets' }),
-        tags: expect.objectContaining({ feature: 'settings-mutation' }),
+        extra: expect.objectContaining({ status: 403, path: "/api/settings/bets" }),
+        tags: expect.objectContaining({ feature: "settings-mutation" }),
       }),
-    )
+    );
     expect(messageOpenMock).toHaveBeenCalledWith(
       expect.objectContaining({
-        content: expect.stringContaining('permission'),
-        type: 'error',
+        content: expect.stringContaining("permission"),
+        type: "error",
       }),
-    )
-  })
-})
+    );
+  });
+});
 
 describe(useUpdateAccount, () => {
   beforeEach(() => {
-    mutateMock.mockResolvedValue(undefined)
-    global.fetch = vi.fn().mockResolvedValue({ ok: true })
-  })
+    mutateMock.mockResolvedValue(undefined);
+    global.fetch = vi.fn().mockResolvedValue({ ok: true });
+  });
 
   afterEach(() => {
-    vi.restoreAllMocks()
-    mutateMock.mockReset()
-    messageOpenMock.mockReset()
-  })
+    vi.restoreAllMocks();
+    mutateMock.mockReset();
+    messageOpenMock.mockReset();
+  });
 
-  it('retains read-only accounts during an optimistic update', () => {
-    const refs: { update?: ReturnType<typeof useUpdateAccount>['update'] } = {}
+  it("retains read-only accounts during an optimistic update", () => {
+    const refs: { update?: ReturnType<typeof useUpdateAccount>["update"] } = {};
     const ownedAccount = {
       canEdit: true,
       connectedUserIds: [],
       leaderboard_rank: null,
       mmr: 5000,
-      name: 'Owned account',
+      name: "Owned account",
       steam32Id: 111,
-    }
+    };
     const linkedAccount = {
       canEdit: false,
-      connectedUserIds: ['owner-name'],
+      connectedUserIds: ["owner-name"],
       leaderboard_rank: null,
       mmr: 4000,
-      name: 'Linked account',
+      name: "Linked account",
       steam32Id: 222,
-    }
+    };
 
     vi.mocked(useSWR).mockReturnValue({
       data: { accounts: [ownedAccount, linkedAccount] },
       error: undefined,
-    } as ReturnType<typeof useSWR>)
+    } as ReturnType<typeof useSWR>);
 
     const TestComponent = () => {
-      refs.update = useUpdateAccount().update
-      return null
-    }
+      refs.update = useUpdateAccount().update;
+      return null;
+    };
 
-    render(<TestComponent />)
+    render(<TestComponent />);
 
     act(() => {
-      refs.update?.([{ ...ownedAccount, mmr: 6000 }])
-    })
+      refs.update?.([{ ...ownedAccount, mmr: 6000 }]);
+    });
 
     expect(mutateMock).toHaveBeenCalledWith(
-      '/api/settings/accounts',
+      "/api/settings/accounts",
       expect.any(Promise),
       expect.objectContaining({
         optimisticData: {
           accounts: [{ ...ownedAccount, mmr: 6000 }, linkedAccount],
         },
       }),
-    )
-  })
-})
+    );
+  });
+});
 
-describe('useUpdateSetting (chatters)', () => {
+describe("useUpdateSetting (chatters)", () => {
   beforeEach(() => {
-    mutateMock.mockResolvedValue(undefined)
-    global.fetch = vi.fn().mockResolvedValue({ ok: true })
-  })
+    mutateMock.mockResolvedValue(undefined);
+    global.fetch = vi.fn().mockResolvedValue({ ok: true });
+  });
 
   afterEach(() => {
-    vi.restoreAllMocks()
-    mutateMock.mockReset()
-    messageOpenMock.mockReset()
-  })
+    vi.restoreAllMocks();
+    mutateMock.mockReset();
+    messageOpenMock.mockReset();
+  });
 
-  it('optimistically flips the toggled chatter so the switch reflects the new state', () => {
-    const refs: { updateSetting?: (value: boolean | null) => void; value?: unknown } = {}
+  it("optimistically flips the toggled chatter so the switch reflects the new state", () => {
+    const refs: { updateSetting?: (value: boolean | null) => void; value?: unknown } = {};
 
     vi.mocked(useSWR).mockReturnValue({
       data: {
         settings: [
           {
-            key: 'chatters',
+            key: "chatters",
             value: { smoke: { enabled: true }, tip: { enabled: false } },
           },
         ],
       },
       error: undefined,
-    } as ReturnType<typeof useSWR>)
+    } as ReturnType<typeof useSWR>);
 
     const TestComponent = () => {
-      const { data, updateSetting } = useUpdateSetting<boolean | null>('chatters.tip')
-      refs.updateSetting = updateSetting
-      refs.value = data
-      return null
-    }
+      const { data, updateSetting } = useUpdateSetting<boolean | null>("chatters.tip");
+      refs.updateSetting = updateSetting;
+      refs.value = data;
+      return null;
+    };
 
-    render(<TestComponent />)
+    render(<TestComponent />);
 
     // Sanity: the switch starts in the stored (disabled) state.
-    expect(refs.value).toBeFalsy()
+    expect(refs.value).toBeFalsy();
 
     act(() => {
-      refs.updateSetting?.(true)
-    })
+      refs.updateSetting?.(true);
+    });
 
     // The PATCH targets the parent `chatters` key with the nested {enabled} shape.
     expect(global.fetch).toHaveBeenCalledWith(
-      '/api/settings/chatters',
+      "/api/settings/chatters",
       expect.objectContaining({
         body: JSON.stringify({ value: { tip: { enabled: true } } }),
-        method: 'PATCH',
+        method: "PATCH",
       }),
-    )
+    );
 
     // Regression: with revalidate off, the optimistic cache update is the only thing the UI
     // reads, so it must flip tip to enabled (leaving other chatters intact) rather
     // than stashing the payload under a stray `value` key.
     expect(mutateMock).toHaveBeenCalledWith(
-      '/api/settings',
+      "/api/settings",
       expect.any(Promise),
       expect.objectContaining({
         optimisticData: {
           settings: [
             {
-              key: 'chatters',
+              key: "chatters",
               value: { smoke: { enabled: true }, tip: { enabled: true } },
             },
           ],
         },
       }),
-    )
-  })
-})
+    );
+  });
+});
