@@ -1,11 +1,11 @@
-import type { NextApiRequest, NextApiResponse } from 'next'
-import { createMocks } from 'node-mocks-http'
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
-import { z } from 'zod'
+import type { NextApiRequest, NextApiResponse } from "next";
+import { createMocks } from "node-mocks-http";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vite-plus/test";
+import { z } from "zod";
 
-vi.stubEnv('NOWPAYMENTS_API_KEY', 'test-api-key')
-vi.stubEnv('NOWPAYMENTS_IPN_SECRET', 'test-ipn-secret')
-vi.stubEnv('NEXTAUTH_URL', 'https://dotabod.com')
+vi.stubEnv("NOWPAYMENTS_API_KEY", "test-api-key");
+vi.stubEnv("NOWPAYMENTS_IPN_SECRET", "test-ipn-secret");
+vi.stubEnv("NEXTAUTH_URL", "https://dotabod.com");
 
 const mocks = vi.hoisted(() => ({
   createNowPaymentsInvoice: vi.fn(),
@@ -28,213 +28,213 @@ const mocks = vi.hoisted(() => ({
       retrieve: vi.fn(),
     },
   },
-}))
+}));
 
-vi.mock('@/lib/db', () => ({ default: mocks.prisma }))
-vi.mock('@/lib/stripe-server', () => ({ stripe: mocks.stripe }))
-vi.mock('@/lib/api/get-server-session', () => ({ getServerSession: mocks.getServerSession }))
-vi.mock('@/lib/auth', () => ({ authOptions: {} }))
-vi.mock('@/lib/feature-flags', () => ({ featureFlags: mocks.featureFlags }))
-vi.mock('@/lib/nowpayments', () => ({
+vi.mock("@/lib/db", () => ({ default: mocks.prisma }));
+vi.mock("@/lib/stripe-server", () => ({ stripe: mocks.stripe }));
+vi.mock("@/lib/api/get-server-session", () => ({ getServerSession: mocks.getServerSession }));
+vi.mock("@/lib/auth", () => ({ authOptions: {} }));
+vi.mock("@/lib/feature-flags", () => ({ featureFlags: mocks.featureFlags }));
+vi.mock("@/lib/nowpayments", () => ({
   createNowPaymentsInvoice: mocks.createNowPaymentsInvoice,
-}))
-vi.mock('@/utils/subscription', () => ({
-  CRYPTO_PRICE_IDS: [{ annual: 'price_yr', lifetime: 'price_lt', monthly: 'price_mo' }],
-}))
+}));
+vi.mock("@/utils/subscription", () => ({
+  CRYPTO_PRICE_IDS: [{ annual: "price_yr", lifetime: "price_lt", monthly: "price_mo" }],
+}));
 
-let handler: typeof import('@/pages/api/stripe/crypto-invoice').default
+let handler: typeof import("@/pages/api/stripe/crypto-invoice").default;
 
-const cryptoInvoiceResponseSchema = z.object({ url: z.string().url() })
+const cryptoInvoiceResponseSchema = z.object({ url: z.string().url() });
 
 beforeAll(async () => {
-  ;({ default: handler } = await import('@/pages/api/stripe/crypto-invoice'))
-})
+  ({ default: handler } = await import("@/pages/api/stripe/crypto-invoice"));
+});
 
 const buildReq = function buildReq() {
-  return createMocks<NextApiRequest, NextApiResponse>({ method: 'POST' })
-}
+  return createMocks<NextApiRequest, NextApiResponse>({ method: "POST" });
+};
 
 const session = {
-  user: { id: 'user_1', isImpersonating: false },
-}
+  user: { id: "user_1", isImpersonating: false },
+};
 
 const cryptoSubscription = {
   metadata: {
-    isCryptoPayment: 'true',
-    renewalInvoiceId: 'in_renew_1',
+    isCryptoPayment: "true",
+    renewalInvoiceId: "in_renew_1",
   },
-  status: 'ACTIVE',
-  stripePriceId: 'price_mo',
-  userId: 'user_1',
-}
+  status: "ACTIVE",
+  stripePriceId: "price_mo",
+  userId: "user_1",
+};
 
-describe('POST /api/stripe/crypto-invoice', () => {
+describe("POST /api/stripe/crypto-invoice", () => {
   beforeEach(() => {
-    vi.stubEnv('NOWPAYMENTS_API_KEY', 'test-api-key')
-    vi.stubEnv('NOWPAYMENTS_IPN_SECRET', 'test-ipn-secret')
-    vi.stubEnv('NEXTAUTH_URL', 'https://dotabod.com')
-    mocks.featureFlags.enableCryptoPayments = true
-    mocks.getServerSession.mockResolvedValue(session)
-    mocks.prisma.subscription.findFirst.mockResolvedValue(cryptoSubscription)
-  })
+    vi.stubEnv("NOWPAYMENTS_API_KEY", "test-api-key");
+    vi.stubEnv("NOWPAYMENTS_IPN_SECRET", "test-ipn-secret");
+    vi.stubEnv("NEXTAUTH_URL", "https://dotabod.com");
+    mocks.featureFlags.enableCryptoPayments = true;
+    mocks.getServerSession.mockResolvedValue(session);
+    mocks.prisma.subscription.findFirst.mockResolvedValue(cryptoSubscription);
+  });
 
-  it('returns the cached NOWPayments invoice URL when one already exists in a payable state', async () => {
+  it("returns the cached NOWPayments invoice URL when one already exists in a payable state", async () => {
     mocks.prisma.nowPaymentsInvoice.findUnique.mockResolvedValue({
-      hostedInvoiceUrl: 'https://nowpayments.io/payment/?iid=existing',
-      status: 'waiting',
-    })
-    mocks.stripe.invoices.retrieve.mockResolvedValue({ id: 'in_renew_1', status: 'open' })
+      hostedInvoiceUrl: "https://nowpayments.io/payment/?iid=existing",
+      status: "waiting",
+    });
+    mocks.stripe.invoices.retrieve.mockResolvedValue({ id: "in_renew_1", status: "open" });
 
-    const { req, res } = buildReq()
-    await handler(req, res)
+    const { req, res } = buildReq();
+    await handler(req, res);
 
-    expect(res._getStatusCode()).toBe(200)
+    expect(res._getStatusCode()).toBe(200);
     expect(cryptoInvoiceResponseSchema.parse(res._getJSONData()).url).toBe(
-      'https://nowpayments.io/payment/?iid=existing',
-    )
-    expect(mocks.createNowPaymentsInvoice).not.toHaveBeenCalled()
-  })
+      "https://nowpayments.io/payment/?iid=existing",
+    );
+    expect(mocks.createNowPaymentsInvoice).not.toHaveBeenCalled();
+  });
 
-  it('discards a terminal-state cached invoice and creates a fresh one', async () => {
+  it("discards a terminal-state cached invoice and creates a fresh one", async () => {
     mocks.prisma.nowPaymentsInvoice.findUnique.mockResolvedValue({
-      hostedInvoiceUrl: 'https://nowpayments.io/payment/?iid=stale',
-      status: 'expired',
-    })
-    mocks.prisma.nowPaymentsInvoice.delete.mockResolvedValue({})
+      hostedInvoiceUrl: "https://nowpayments.io/payment/?iid=stale",
+      status: "expired",
+    });
+    mocks.prisma.nowPaymentsInvoice.delete.mockResolvedValue({});
     mocks.stripe.invoices.retrieve.mockResolvedValue({
       amount_remaining: 1300,
-      currency: 'usd',
-      customer: 'cus_1',
-      id: 'in_renew_1',
-      status: 'open',
-    })
+      currency: "usd",
+      customer: "cus_1",
+      id: "in_renew_1",
+      status: "open",
+    });
     mocks.createNowPaymentsInvoice.mockResolvedValue({
       id: 6666,
-      invoice_url: 'https://nowpayments.io/payment/?iid=replacement',
-    })
+      invoice_url: "https://nowpayments.io/payment/?iid=replacement",
+    });
 
-    const { req, res } = buildReq()
-    await handler(req, res)
+    const { req, res } = buildReq();
+    await handler(req, res);
 
     expect(mocks.prisma.nowPaymentsInvoice.delete).toHaveBeenCalledWith({
-      where: { stripeInvoiceId: 'in_renew_1' },
-    })
-    expect(res._getStatusCode()).toBe(200)
+      where: { stripeInvoiceId: "in_renew_1" },
+    });
+    expect(res._getStatusCode()).toBe(200);
     expect(cryptoInvoiceResponseSchema.parse(res._getJSONData()).url).toBe(
-      'https://nowpayments.io/payment/?iid=replacement',
-    )
-  })
+      "https://nowpayments.io/payment/?iid=replacement",
+    );
+  });
 
-  it('creates a fresh NOWPayments invoice when none exists for this renewal', async () => {
-    mocks.prisma.nowPaymentsInvoice.findUnique.mockResolvedValue(null)
+  it("creates a fresh NOWPayments invoice when none exists for this renewal", async () => {
+    mocks.prisma.nowPaymentsInvoice.findUnique.mockResolvedValue(null);
     mocks.stripe.invoices.retrieve.mockResolvedValue({
       amount_remaining: 1300,
-      currency: 'usd',
-      customer: 'cus_1',
-      id: 'in_renew_1',
-      status: 'open',
-    })
+      currency: "usd",
+      customer: "cus_1",
+      id: "in_renew_1",
+      status: "open",
+    });
     mocks.createNowPaymentsInvoice.mockResolvedValue({
       id: 5555,
-      invoice_url: 'https://nowpayments.io/payment/?iid=fresh',
-    })
-    mocks.prisma.nowPaymentsInvoice.create.mockResolvedValue({})
-    mocks.prisma.nowPaymentsInvoice.delete.mockResolvedValue({})
+      invoice_url: "https://nowpayments.io/payment/?iid=fresh",
+    });
+    mocks.prisma.nowPaymentsInvoice.create.mockResolvedValue({});
+    mocks.prisma.nowPaymentsInvoice.delete.mockResolvedValue({});
 
-    const { req, res } = buildReq()
-    await handler(req, res)
+    const { req, res } = buildReq();
+    await handler(req, res);
 
-    expect(res._getStatusCode()).toBe(200)
+    expect(res._getStatusCode()).toBe(200);
     expect(cryptoInvoiceResponseSchema.parse(res._getJSONData()).url).toBe(
-      'https://nowpayments.io/payment/?iid=fresh',
-    )
+      "https://nowpayments.io/payment/?iid=fresh",
+    );
     expect(mocks.createNowPaymentsInvoice).toHaveBeenCalledWith(
       expect.objectContaining({
-        ipn_callback_url: 'https://dotabod.com/api/webhooks/nowpayments',
-        order_id: 'in_renew_1',
+        ipn_callback_url: "https://dotabod.com/api/webhooks/nowpayments",
+        order_id: "in_renew_1",
         price_amount: 13,
-        price_currency: 'usd',
+        price_currency: "usd",
       }),
-    )
+    );
     expect(mocks.prisma.nowPaymentsInvoice.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
-        hostedInvoiceUrl: 'https://nowpayments.io/payment/?iid=fresh',
-        nowPaymentsId: '5555',
-        stripeInvoiceId: 'in_renew_1',
-        userId: 'user_1',
+        hostedInvoiceUrl: "https://nowpayments.io/payment/?iid=fresh",
+        nowPaymentsId: "5555",
+        stripeInvoiceId: "in_renew_1",
+        userId: "user_1",
       }),
-    })
-  })
+    });
+  });
 
-  it('finalizes a draft renewal invoice before creating the NOWPayments invoice', async () => {
-    mocks.prisma.nowPaymentsInvoice.findUnique.mockResolvedValue(null)
+  it("finalizes a draft renewal invoice before creating the NOWPayments invoice", async () => {
+    mocks.prisma.nowPaymentsInvoice.findUnique.mockResolvedValue(null);
     mocks.stripe.invoices.retrieve.mockResolvedValue({
       amount_remaining: 1300,
-      currency: 'usd',
-      customer: 'cus_1',
-      id: 'in_renew_1',
-      status: 'draft',
-    })
+      currency: "usd",
+      customer: "cus_1",
+      id: "in_renew_1",
+      status: "draft",
+    });
     mocks.stripe.invoices.finalizeInvoice.mockResolvedValue({
       amount_remaining: 1300,
-      currency: 'usd',
-      customer: 'cus_1',
-      id: 'in_renew_1',
-      status: 'open',
-    })
+      currency: "usd",
+      customer: "cus_1",
+      id: "in_renew_1",
+      status: "open",
+    });
     mocks.createNowPaymentsInvoice.mockResolvedValue({
       id: 5556,
-      invoice_url: 'https://nowpayments.io/payment/?iid=fresh2',
-    })
+      invoice_url: "https://nowpayments.io/payment/?iid=fresh2",
+    });
 
-    const { req, res } = buildReq()
-    await handler(req, res)
+    const { req, res } = buildReq();
+    await handler(req, res);
 
-    expect(mocks.stripe.invoices.finalizeInvoice).toHaveBeenCalledWith('in_renew_1')
-    expect(res._getStatusCode()).toBe(200)
+    expect(mocks.stripe.invoices.finalizeInvoice).toHaveBeenCalledWith("in_renew_1");
+    expect(res._getStatusCode()).toBe(200);
     expect(cryptoInvoiceResponseSchema.parse(res._getJSONData()).url).toBe(
-      'https://nowpayments.io/payment/?iid=fresh2',
-    )
-  })
+      "https://nowpayments.io/payment/?iid=fresh2",
+    );
+  });
 
-  it('rejects a void or uncollectible invoice', async () => {
-    mocks.prisma.nowPaymentsInvoice.findUnique.mockResolvedValue(null)
-    mocks.stripe.invoices.retrieve.mockResolvedValue({ id: 'in_renew_1', status: 'void' })
+  it("rejects a void or uncollectible invoice", async () => {
+    mocks.prisma.nowPaymentsInvoice.findUnique.mockResolvedValue(null);
+    mocks.stripe.invoices.retrieve.mockResolvedValue({ id: "in_renew_1", status: "void" });
 
-    const { req, res } = buildReq()
-    await handler(req, res)
+    const { req, res } = buildReq();
+    await handler(req, res);
 
-    expect(res._getStatusCode()).toBe(400)
-    expect(mocks.createNowPaymentsInvoice).not.toHaveBeenCalled()
-  })
+    expect(res._getStatusCode()).toBe(400);
+    expect(mocks.createNowPaymentsInvoice).not.toHaveBeenCalled();
+  });
 
-  it('rejects a void Stripe invoice even when a reusable cached NOWPayments row exists', async () => {
+  it("rejects a void Stripe invoice even when a reusable cached NOWPayments row exists", async () => {
     mocks.prisma.nowPaymentsInvoice.findUnique.mockResolvedValue({
-      hostedInvoiceUrl: 'https://nowpayments.io/payment/?iid=cached',
-      status: 'waiting',
-    })
-    mocks.stripe.invoices.retrieve.mockResolvedValue({ id: 'in_renew_1', status: 'void' })
+      hostedInvoiceUrl: "https://nowpayments.io/payment/?iid=cached",
+      status: "waiting",
+    });
+    mocks.stripe.invoices.retrieve.mockResolvedValue({ id: "in_renew_1", status: "void" });
 
-    const { req, res } = buildReq()
-    await handler(req, res)
+    const { req, res } = buildReq();
+    await handler(req, res);
 
-    expect(res._getStatusCode()).toBe(400)
-    expect(mocks.prisma.nowPaymentsInvoice.findUnique).not.toHaveBeenCalled()
-  })
+    expect(res._getStatusCode()).toBe(400);
+    expect(mocks.prisma.nowPaymentsInvoice.findUnique).not.toHaveBeenCalled();
+  });
 
-  it('rejects impersonation', async () => {
+  it("rejects impersonation", async () => {
     mocks.getServerSession.mockResolvedValue({
-      user: { id: 'user_1', isImpersonating: true },
-    })
-    const { req, res } = buildReq()
-    await handler(req, res)
-    expect(res._getStatusCode()).toBe(403)
-  })
+      user: { id: "user_1", isImpersonating: true },
+    });
+    const { req, res } = buildReq();
+    await handler(req, res);
+    expect(res._getStatusCode()).toBe(403);
+  });
 
-  it('blocks the request when the crypto feature flag is off', async () => {
-    mocks.featureFlags.enableCryptoPayments = false
-    const { req, res } = buildReq()
-    await handler(req, res)
-    expect(res._getStatusCode()).toBe(403)
-  })
-})
+  it("blocks the request when the crypto feature flag is off", async () => {
+    mocks.featureFlags.enableCryptoPayments = false;
+    const { req, res } = buildReq();
+    await handler(req, res);
+    expect(res._getStatusCode()).toBe(403);
+  });
+});
