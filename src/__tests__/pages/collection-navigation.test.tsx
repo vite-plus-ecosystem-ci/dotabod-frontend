@@ -41,7 +41,7 @@ describe('cosmetic collection profile navigation', () => {
   beforeEach(() => {
     vi.restoreAllMocks()
     vi.spyOn(prisma.user, 'findFirst').mockResolvedValue(
-      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: The fixture includes every field selected by this route.
+      // oxlint-disable typescript/no-unsafe-type-assertion -- SAFETY: The fixture includes every field selected by this route.
       {
         cosmeticLoadouts: [
           {
@@ -54,14 +54,16 @@ describe('cosmetic collection profile navigation', () => {
         displayName: 'Streamer',
         name: 'streamer',
       } as never,
+      // oxlint-enable typescript/no-unsafe-type-assertion
     )
   })
 
   it('loads a hero from the dynamic route parameter', async () => {
-    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: The route handler reads only `params`; omitted request context fields cannot affect this assertion.
+    // oxlint-disable typescript/no-unsafe-type-assertion -- SAFETY: The route handler reads only `params`; omitted request context fields cannot affect this assertion.
     const result = await getServerSideProps({
       params: { 'hero-id': '2', username: 'Streamer' },
     } as never)
+    // oxlint-enable typescript/no-unsafe-type-assertion
 
     expect(result).toMatchObject({
       props: { heroId: 2, heroName: 'Axe', username: 'streamer' },
