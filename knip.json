@@ -3,5 +3,5 @@
   "ignore": [".agents/**", "public/styles/obs-compat.css"],
   "ignoreBinaries": ["doppler"],
   "ignoreDependencies": ["@types/pg", "@vinext/cloudflare", "jsr", "npm", "pg"],
-  "entry": ["scripts/**/*.{ts,mjs}", "supabase/functions/**/*.ts"]
+  "entry": ["scripts/**/*.{ts,mjs}", "supabase/functions/**/*.ts", "oxlint.deno.config.ts"]
 }
