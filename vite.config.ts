@@ -3,11 +3,13 @@ import { sentryVitePlugin } from "@sentry/vite-plugin";
 import vinext from "vinext";
 import { defineConfig, lazyPlugins } from "vite-plus";
 
+import oxfmtConfig from "./oxfmt.config.ts";
+
 export default defineConfig({
   staged: {
     "*": "vp check --fix",
   },
-  fmt: {},
+  fmt: oxfmtConfig,
   lint: {
     jsPlugins: [{ name: "vite-plus", specifier: "vite-plus/oxlint-plugin" }],
     rules: { "vite-plus/prefer-vite-plus-imports": "error" },
