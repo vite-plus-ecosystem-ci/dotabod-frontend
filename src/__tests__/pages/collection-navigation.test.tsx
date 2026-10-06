@@ -1,132 +1,132 @@
-import { render, screen, within } from '@testing-library/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { render, screen, within } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import prisma from '@/lib/db'
-import SetPage from '@/pages/[username]/set'
-import DetailPage, { getServerSideProps } from '@/pages/[username]/set/[hero-id]'
+import prisma from "@/lib/db";
+import SetPage from "@/pages/[username]/set";
+import DetailPage, { getServerSideProps } from "@/pages/[username]/set/[hero-id]";
 
-vi.mock('@/components/Homepage/homepage-shell', () => ({
+vi.mock("@/components/Homepage/homepage-shell", () => ({
   default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
-}))
+}));
 
-vi.mock('next/router', () => ({
+vi.mock("next/router", () => ({
   useRouter: () => ({ push: vi.fn() }),
-}))
+}));
 
 const setProps = {
   cards: [],
-  displayName: 'Streamer',
+  displayName: "Streamer",
   image: null,
   rosterSize: 126,
   tally: [],
-  username: 'streamer',
-}
+  username: "streamer",
+};
 
 const detailProps = {
-  displayName: 'Streamer',
+  displayName: "Streamer",
   heroId: 2,
   heroImage: null,
-  heroName: 'Axe',
+  heroName: "Axe",
   items: [],
-  next: { heroId: 3, heroName: 'Bane' },
+  next: { heroId: 3, heroName: "Bane" },
   position: 2,
-  prev: { heroId: 1, heroName: 'Anti-Mage' },
+  prev: { heroId: 1, heroName: "Anti-Mage" },
   total: 3,
-  updatedIso: '2026-08-24T12:00:00.000Z',
-  updatedLabel: 'Aug 24, 2026, 12:00 PM',
-  username: 'streamer',
-}
+  updatedIso: "2026-08-24T12:00:00.000Z",
+  updatedLabel: "Aug 24, 2026, 12:00 PM",
+  username: "streamer",
+};
 
-describe('cosmetic collection profile navigation', () => {
+describe("cosmetic collection profile navigation", () => {
   beforeEach(() => {
-    vi.restoreAllMocks()
-    vi.spyOn(prisma.user, 'findFirst').mockResolvedValue(
+    vi.restoreAllMocks();
+    vi.spyOn(prisma.user, "findFirst").mockResolvedValue(
       // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: The fixture includes every field selected by this route.
       {
         cosmeticLoadouts: [
           {
             heroId: 2,
-            heroName: 'Axe',
+            heroName: "Axe",
             items: [],
-            updatedAt: new Date('2026-08-24T12:00:00.000Z'),
+            updatedAt: new Date("2026-08-24T12:00:00.000Z"),
           },
         ],
-        displayName: 'Streamer',
-        name: 'streamer',
+        displayName: "Streamer",
+        name: "streamer",
       } as never,
-    )
-  })
+    );
+  });
 
-  it('loads a hero from the dynamic route parameter', async () => {
+  it("loads a hero from the dynamic route parameter", async () => {
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- SAFETY: The route handler reads only `params`; omitted request context fields cannot affect this assertion.
     const result = await getServerSideProps({
-      params: { 'hero-id': '2', username: 'Streamer' },
-    } as never)
+      params: { "hero-id": "2", username: "Streamer" },
+    } as never);
 
     expect(result).toMatchObject({
-      props: { heroId: 2, heroName: 'Axe', username: 'streamer' },
-    })
-  })
+      props: { heroId: 2, heroName: "Axe", username: "streamer" },
+    });
+  });
 
-  it('links the collection page to match history', () => {
-    render(<SetPage {...setProps} />)
+  it("links the collection page to match history", () => {
+    render(<SetPage {...setProps} />);
 
-    const profileSections = screen.getByRole('navigation', { name: 'Profile sections' })
-    expect(within(profileSections).getByRole('link', { name: 'Match history' })).toHaveAttribute(
-      'href',
-      '/streamer/matches',
-    )
-  })
+    const profileSections = screen.getByRole("navigation", { name: "Profile sections" });
+    expect(within(profileSections).getByRole("link", { name: "Match history" })).toHaveAttribute(
+      "href",
+      "/streamer/matches",
+    );
+  });
 
-  it('marks cosmetic collection as current on the collection page', () => {
-    render(<SetPage {...setProps} />)
+  it("marks cosmetic collection as current on the collection page", () => {
+    render(<SetPage {...setProps} />);
 
-    const profileSections = screen.getByRole('navigation', { name: 'Profile sections' })
+    const profileSections = screen.getByRole("navigation", { name: "Profile sections" });
     expect(
-      within(profileSections).getByRole('link', { name: 'Cosmetic collection' }),
-    ).toHaveAttribute('aria-current', 'page')
+      within(profileSections).getByRole("link", { name: "Cosmetic collection" }),
+    ).toHaveAttribute("aria-current", "page");
     expect(
-      within(profileSections).getByRole('link', { name: 'Match history' }),
-    ).not.toHaveAttribute('aria-current')
-  })
+      within(profileSections).getByRole("link", { name: "Match history" }),
+    ).not.toHaveAttribute("aria-current");
+  });
 
-  it('links a hero detail page to match history', () => {
-    render(<DetailPage {...detailProps} />)
+  it("links a hero detail page to match history", () => {
+    render(<DetailPage {...detailProps} />);
 
-    const profileSections = screen.getByRole('navigation', { name: 'Profile sections' })
-    expect(within(profileSections).getByRole('link', { name: 'Match history' })).toHaveAttribute(
-      'href',
-      '/streamer/matches',
-    )
-  })
+    const profileSections = screen.getByRole("navigation", { name: "Profile sections" });
+    expect(within(profileSections).getByRole("link", { name: "Match history" })).toHaveAttribute(
+      "href",
+      "/streamer/matches",
+    );
+  });
 
-  it('keeps cosmetic collection current on a hero detail page', () => {
-    render(<DetailPage {...detailProps} />)
+  it("keeps cosmetic collection current on a hero detail page", () => {
+    render(<DetailPage {...detailProps} />);
 
-    const profileSections = screen.getByRole('navigation', { name: 'Profile sections' })
+    const profileSections = screen.getByRole("navigation", { name: "Profile sections" });
     expect(
-      within(profileSections).getByRole('link', { name: 'Cosmetic collection' }),
-    ).toHaveAttribute('aria-current', 'page')
+      within(profileSections).getByRole("link", { name: "Cosmetic collection" }),
+    ).toHaveAttribute("aria-current", "page");
     expect(
-      within(profileSections).getByRole('link', { name: 'Match history' }),
-    ).not.toHaveAttribute('aria-current')
-  })
+      within(profileSections).getByRole("link", { name: "Match history" }),
+    ).not.toHaveAttribute("aria-current");
+  });
 
-  it('preserves previous and next hero navigation', () => {
-    render(<DetailPage {...detailProps} />)
+  it("preserves previous and next hero navigation", () => {
+    render(<DetailPage {...detailProps} />);
 
-    expect(screen.getByRole('link', { name: 'Anti-Mage' })).toHaveAttribute(
-      'href',
-      '/streamer/set/1',
-    )
-    expect(screen.getByRole('link', { name: 'Bane' })).toHaveAttribute('href', '/streamer/set/3')
-  })
+    expect(screen.getByRole("link", { name: "Anti-Mage" })).toHaveAttribute(
+      "href",
+      "/streamer/set/1",
+    );
+    expect(screen.getByRole("link", { name: "Bane" })).toHaveAttribute("href", "/streamer/set/3");
+  });
 
-  it('keeps the shared profile tab rail from scrolling vertically', () => {
-    render(<SetPage {...setProps} />)
+  it("keeps the shared profile tab rail from scrolling vertically", () => {
+    render(<SetPage {...setProps} />);
 
-    expect(screen.getByRole('navigation', { name: 'Profile sections' })).toHaveClass(
-      'overflow-y-hidden',
-    )
-  })
-})
+    expect(screen.getByRole("navigation", { name: "Profile sections" })).toHaveClass(
+      "overflow-y-hidden",
+    );
+  });
+});

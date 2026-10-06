@@ -1,8 +1,8 @@
-import { createMocks } from 'node-mocks-http'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createMocks } from "node-mocks-http";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { calculateGiftEndDate } from '@/lib/gift-subscription'
-import handler, { config } from '@/pages/api/stripe/webhook'
+import { calculateGiftEndDate } from "@/lib/gift-subscription";
+import handler, { config } from "@/pages/api/stripe/webhook";
 
 /**
  * Tests for the Stripe webhook handler
@@ -21,513 +21,513 @@ import handler, { config } from '@/pages/api/stripe/webhook'
  */
 
 // Mock the webhook handler to avoid timeouts
-vi.mock('@/pages/api/stripe/webhook', () => ({
+vi.mock("@/pages/api/stripe/webhook", () => ({
   config: {
     api: {
       bodyParser: false,
     },
   },
   default: vi.fn((req, res) => {
-    if (req.method !== 'POST') {
-      return res.status(405).json({ error: 'Method not allowed' })
+    if (req.method !== "POST") {
+      return res.status(405).json({ error: "Method not allowed" });
     }
 
-    if (!req.headers['stripe-signature']) {
-      return res.status(400).json({ error: 'Webhook configuration error' })
+    if (!req.headers["stripe-signature"]) {
+      return res.status(400).json({ error: "Webhook configuration error" });
     }
 
-    if (!req.headers['stripe-webhook-secret']) {
-      return res.status(400).json({ error: 'Missing webhook secret' })
+    if (!req.headers["stripe-webhook-secret"]) {
+      return res.status(400).json({ error: "Missing webhook secret" });
     }
 
-    if (req.headers['stripe-signature'] === 'invalid_signature') {
-      return res.status(400).json({ error: 'Webhook verification failed' })
+    if (req.headers["stripe-signature"] === "invalid_signature") {
+      return res.status(400).json({ error: "Webhook verification failed" });
     }
 
-    if (req.headers['stripe-signature'] === 'error_signature') {
-      return res.status(500).json({ error: 'Webhook processing failed' })
+    if (req.headers["stripe-signature"] === "error_signature") {
+      return res.status(500).json({ error: "Webhook processing failed" });
     }
 
     // Test for idempotency
-    if (req.headers['stripe-signature'] === 'duplicate_event') {
-      return res.status(200).json({ idempotent: true, received: true })
+    if (req.headers["stripe-signature"] === "duplicate_event") {
+      return res.status(200).json({ idempotent: true, received: true });
     }
 
     // Test for irrelevant event types
     if (
-      req.headers['event-type'] &&
+      req.headers["event-type"] &&
       ![
-        'customer.subscription.created',
-        'customer.subscription.updated',
-        'customer.subscription.deleted',
-        'customer.deleted',
-        'invoice.payment_succeeded',
-        'invoice.payment_failed',
-        'checkout.session.completed',
-        'charge.succeeded',
-      ].includes(req.headers['event-type'] as string)
+        "customer.subscription.created",
+        "customer.subscription.updated",
+        "customer.subscription.deleted",
+        "customer.deleted",
+        "invoice.payment_succeeded",
+        "invoice.payment_failed",
+        "checkout.session.completed",
+        "charge.succeeded",
+      ].includes(req.headers["event-type"] as string)
     ) {
-      return res.status(200).json({ ignored: true, received: true })
+      return res.status(200).json({ ignored: true, received: true });
     }
 
     // Test for gift subscription handling
-    if (req.headers['is-gift'] === 'true') {
+    if (req.headers["is-gift"] === "true") {
       // Handle gift subscription with existing subscriptions
-      if (req.headers['has-existing-subscription'] === 'true') {
+      if (req.headers["has-existing-subscription"] === "true") {
         return res.status(200).json({
           // Example end date
-          endDate: '2025-04-15T15:22:58.000Z',
+          endDate: "2025-04-15T15:22:58.000Z",
           gift: true,
           hasExistingSubscription: true,
           received: true,
-        })
+        });
       }
 
       // Handle gift subscription with quantity adjustments
-      if (req.headers['adjusted-quantity'] === 'true') {
+      if (req.headers["adjusted-quantity"] === "true") {
         return res.status(200).json({
           // Example end date with adjusted quantity
-          endDate: '2025-06-15T15:22:58.000Z',
+          endDate: "2025-06-15T15:22:58.000Z",
           finalQuantity: 3,
           gift: true,
           originalQuantity: 1,
           quantityWasAdjusted: true,
           received: true,
-        })
+        });
       }
 
       // Default gift subscription handling
       return res.status(200).json({
         // Example end date
-        endDate: '2025-04-15T15:22:58.000Z',
+        endDate: "2025-04-15T15:22:58.000Z",
         gift: true,
         received: true,
-      })
+      });
     }
 
     // Test for transaction retry logic
-    if (req.headers['retry-test'] === 'true') {
+    if (req.headers["retry-test"] === "true") {
       return res.status(200).json({
         attempts: 2,
         received: true,
         retried: true,
-      })
+      });
     }
 
     // Test for transaction timeout
-    if (req.headers['timeout-test'] === 'true') {
+    if (req.headers["timeout-test"] === "true") {
       return res.status(500).json({
-        error: 'Webhook processing failed',
+        error: "Webhook processing failed",
         timeout: true,
-      })
+      });
     }
 
-    return res.status(200).json({ received: true })
+    return res.status(200).json({ received: true });
   }),
-}))
+}));
 
 // Import the mocked handler
 
-describe('Stripe webhook handler', () => {
+describe("Stripe webhook handler", () => {
   beforeEach(() => {
-    vi.resetAllMocks()
-  })
+    vi.resetAllMocks();
+  });
 
   afterEach(() => {
-    vi.clearAllMocks()
-  })
+    vi.clearAllMocks();
+  });
 
-  it('should have the correct API config', () => {
+  it("should have the correct API config", () => {
     expect(config).toStrictEqual({
       api: {
         bodyParser: false,
       },
-    })
-  })
+    });
+  });
 
-  it('should return 405 for non-POST requests', async () => {
+  it("should return 405 for non-POST requests", async () => {
     const { req, res } = createMocks({
-      method: 'GET',
-    })
+      method: "GET",
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(405)
-    expect(res._getJSONData()).toStrictEqual({ error: 'Method not allowed' })
-  })
+    expect(res.statusCode).toBe(405);
+    expect(res._getJSONData()).toStrictEqual({ error: "Method not allowed" });
+  });
 
-  it('should return 400 if stripe-signature is missing', async () => {
+  it("should return 400 if stripe-signature is missing", async () => {
     const { req, res } = createMocks({
       headers: {},
-      method: 'POST',
-    })
+      method: "POST",
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(400)
-    expect(res._getJSONData()).toStrictEqual({ error: 'Webhook configuration error' })
-  })
+    expect(res.statusCode).toBe(400);
+    expect(res._getJSONData()).toStrictEqual({ error: "Webhook configuration error" });
+  });
 
-  it('should return 400 if webhook verification fails', async () => {
+  it("should return 400 if webhook verification fails", async () => {
     const { req, res } = createMocks({
       headers: {
-        'stripe-signature': 'invalid_signature',
-        'stripe-webhook-secret': 'test_secret',
+        "stripe-signature": "invalid_signature",
+        "stripe-webhook-secret": "test_secret",
       },
-      method: 'POST',
-    })
+      method: "POST",
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(400)
-    expect(res._getJSONData()).toStrictEqual({ error: 'Webhook verification failed' })
-  })
+    expect(res.statusCode).toBe(400);
+    expect(res._getJSONData()).toStrictEqual({ error: "Webhook verification failed" });
+  });
 
-  it('should return 500 if webhook processing fails', async () => {
+  it("should return 500 if webhook processing fails", async () => {
     const { req, res } = createMocks({
       headers: {
-        'stripe-signature': 'error_signature',
-        'stripe-webhook-secret': 'test_secret',
+        "stripe-signature": "error_signature",
+        "stripe-webhook-secret": "test_secret",
       },
-      method: 'POST',
-    })
+      method: "POST",
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(500)
-    expect(res._getJSONData()).toStrictEqual({ error: 'Webhook processing failed' })
-  })
+    expect(res.statusCode).toBe(500);
+    expect(res._getJSONData()).toStrictEqual({ error: "Webhook processing failed" });
+  });
 
-  it('should return 200 for successful webhook processing', async () => {
+  it("should return 200 for successful webhook processing", async () => {
     const { req, res } = createMocks({
       headers: {
-        'stripe-signature': 'valid_signature',
-        'stripe-webhook-secret': 'test_secret',
+        "stripe-signature": "valid_signature",
+        "stripe-webhook-secret": "test_secret",
       },
-      method: 'POST',
-    })
+      method: "POST",
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(200)
-    expect(res._getJSONData()).toStrictEqual({ received: true })
-  })
+    expect(res.statusCode).toBe(200);
+    expect(res._getJSONData()).toStrictEqual({ received: true });
+  });
 
-  it('should return 400 if webhook secret is missing', async () => {
+  it("should return 400 if webhook secret is missing", async () => {
     const { req, res } = createMocks({
       headers: {
-        'stripe-signature': 'valid_signature',
+        "stripe-signature": "valid_signature",
       },
-      method: 'POST',
-    })
+      method: "POST",
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(400)
-    expect(res._getJSONData()).toStrictEqual({ error: 'Missing webhook secret' })
-  })
+    expect(res.statusCode).toBe(400);
+    expect(res._getJSONData()).toStrictEqual({ error: "Missing webhook secret" });
+  });
 
-  it('should handle duplicate events correctly (idempotency)', async () => {
+  it("should handle duplicate events correctly (idempotency)", async () => {
     const { req, res } = createMocks({
       headers: {
-        'stripe-signature': 'duplicate_event',
-        'stripe-webhook-secret': 'test_secret',
+        "stripe-signature": "duplicate_event",
+        "stripe-webhook-secret": "test_secret",
       },
-      method: 'POST',
-    })
+      method: "POST",
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(200)
-    expect(res._getJSONData()).toStrictEqual({ idempotent: true, received: true })
-  })
+    expect(res.statusCode).toBe(200);
+    expect(res._getJSONData()).toStrictEqual({ idempotent: true, received: true });
+  });
 
-  it('should ignore irrelevant event types', async () => {
+  it("should ignore irrelevant event types", async () => {
     const { req, res } = createMocks({
       headers: {
-        'event-type': 'irrelevant.event',
-        'stripe-signature': 'valid_signature',
-        'stripe-webhook-secret': 'test_secret',
+        "event-type": "irrelevant.event",
+        "stripe-signature": "valid_signature",
+        "stripe-webhook-secret": "test_secret",
       },
-      method: 'POST',
-    })
+      method: "POST",
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(200)
-    expect(res._getJSONData()).toStrictEqual({ ignored: true, received: true })
-  })
+    expect(res.statusCode).toBe(200);
+    expect(res._getJSONData()).toStrictEqual({ ignored: true, received: true });
+  });
 
-  describe('Event type handling', () => {
+  describe("Event type handling", () => {
     const eventTypes = [
-      'customer.subscription.created',
-      'customer.subscription.updated',
-      'customer.subscription.deleted',
-      'customer.deleted',
-      'invoice.payment_succeeded',
-      'invoice.payment_failed',
-      'checkout.session.completed',
-      'charge.succeeded',
-    ]
+      "customer.subscription.created",
+      "customer.subscription.updated",
+      "customer.subscription.deleted",
+      "customer.deleted",
+      "invoice.payment_succeeded",
+      "invoice.payment_failed",
+      "checkout.session.completed",
+      "charge.succeeded",
+    ];
 
     for (const eventType of eventTypes) {
       it(`should process ${eventType} events correctly`, async () => {
         const { req, res } = createMocks({
           headers: {
-            'event-type': eventType,
-            'stripe-signature': 'valid_signature',
-            'stripe-webhook-secret': 'test_secret',
+            "event-type": eventType,
+            "stripe-signature": "valid_signature",
+            "stripe-webhook-secret": "test_secret",
           },
-          method: 'POST',
-        })
+          method: "POST",
+        });
 
-        await handler(req, res)
+        await handler(req, res);
 
-        expect(res.statusCode).toBe(200)
-        expect(res._getJSONData()).toStrictEqual({ received: true })
-      })
+        expect(res.statusCode).toBe(200);
+        expect(res._getJSONData()).toStrictEqual({ received: true });
+      });
     }
-  })
+  });
 
-  describe('Gift subscription handling', () => {
-    it('should handle gift subscription checkout completion', async () => {
+  describe("Gift subscription handling", () => {
+    it("should handle gift subscription checkout completion", async () => {
       const { req, res } = createMocks({
         headers: {
-          'event-type': 'checkout.session.completed',
-          'is-gift': 'true',
-          'stripe-signature': 'valid_signature',
-          'stripe-webhook-secret': 'test_secret',
+          "event-type": "checkout.session.completed",
+          "is-gift": "true",
+          "stripe-signature": "valid_signature",
+          "stripe-webhook-secret": "test_secret",
         },
-        method: 'POST',
-      })
+        method: "POST",
+      });
 
-      await handler(req, res)
+      await handler(req, res);
 
-      expect(res.statusCode).toBe(200)
+      expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toStrictEqual({
-        endDate: '2025-04-15T15:22:58.000Z',
+        endDate: "2025-04-15T15:22:58.000Z",
         gift: true,
         received: true,
-      })
-    })
+      });
+    });
 
-    it('should handle gift subscription with existing subscriptions', async () => {
+    it("should handle gift subscription with existing subscriptions", async () => {
       const { req, res } = createMocks({
         headers: {
-          'event-type': 'checkout.session.completed',
-          'has-existing-subscription': 'true',
-          'is-gift': 'true',
-          'stripe-signature': 'valid_signature',
-          'stripe-webhook-secret': 'test_secret',
+          "event-type": "checkout.session.completed",
+          "has-existing-subscription": "true",
+          "is-gift": "true",
+          "stripe-signature": "valid_signature",
+          "stripe-webhook-secret": "test_secret",
         },
-        method: 'POST',
-      })
+        method: "POST",
+      });
 
-      await handler(req, res)
+      await handler(req, res);
 
-      expect(res.statusCode).toBe(200)
+      expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toStrictEqual({
-        endDate: '2025-04-15T15:22:58.000Z',
+        endDate: "2025-04-15T15:22:58.000Z",
         gift: true,
         hasExistingSubscription: true,
         received: true,
-      })
-    })
+      });
+    });
 
-    it('should handle gift subscription quantity adjustments', async () => {
+    it("should handle gift subscription quantity adjustments", async () => {
       const { req, res } = createMocks({
         headers: {
-          'adjusted-quantity': 'true',
-          'event-type': 'checkout.session.completed',
-          'is-gift': 'true',
-          'stripe-signature': 'valid_signature',
-          'stripe-webhook-secret': 'test_secret',
+          "adjusted-quantity": "true",
+          "event-type": "checkout.session.completed",
+          "is-gift": "true",
+          "stripe-signature": "valid_signature",
+          "stripe-webhook-secret": "test_secret",
         },
-        method: 'POST',
-      })
+        method: "POST",
+      });
 
-      await handler(req, res)
+      await handler(req, res);
 
-      expect(res.statusCode).toBe(200)
+      expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toStrictEqual({
-        endDate: '2025-06-15T15:22:58.000Z',
+        endDate: "2025-06-15T15:22:58.000Z",
         finalQuantity: 3,
         gift: true,
         originalQuantity: 1,
         quantityWasAdjusted: true,
         received: true,
-      })
-    })
-  })
+      });
+    });
+  });
 
   // Add tests for the calculateGiftEndDate function
-  describe('Gift subscription date calculation', () => {
-    it('should correctly calculate monthly gift subscription end dates', () => {
+  describe("Gift subscription date calculation", () => {
+    it("should correctly calculate monthly gift subscription end dates", () => {
       // Test with a regular date
-      const startDate = new Date('2025-03-15T00:00:00Z')
-      const endDate = calculateGiftEndDate('monthly', 1, startDate)
-      expect(endDate.toISOString()).toBe('2025-04-15T00:00:00.000Z')
+      const startDate = new Date("2025-03-15T00:00:00Z");
+      const endDate = calculateGiftEndDate("monthly", 1, startDate);
+      expect(endDate.toISOString()).toBe("2025-04-15T00:00:00.000Z");
 
       // Test with multiple months
-      const endDate2 = calculateGiftEndDate('monthly', 3, startDate)
-      expect(endDate2.toISOString()).toBe('2025-06-15T00:00:00.000Z')
-    })
+      const endDate2 = calculateGiftEndDate("monthly", 3, startDate);
+      expect(endDate2.toISOString()).toBe("2025-06-15T00:00:00.000Z");
+    });
 
-    it('should correctly calculate annual gift subscription end dates', () => {
-      const startDate = new Date('2025-03-15T00:00:00Z')
-      const endDate = calculateGiftEndDate('annual', 1, startDate)
-      expect(endDate.toISOString()).toBe('2026-03-15T00:00:00.000Z')
+    it("should correctly calculate annual gift subscription end dates", () => {
+      const startDate = new Date("2025-03-15T00:00:00Z");
+      const endDate = calculateGiftEndDate("annual", 1, startDate);
+      expect(endDate.toISOString()).toBe("2026-03-15T00:00:00.000Z");
 
       // Test with multiple years
-      const endDate2 = calculateGiftEndDate('annual', 2, startDate)
-      expect(endDate2.toISOString()).toBe('2027-03-15T00:00:00.000Z')
-    })
+      const endDate2 = calculateGiftEndDate("annual", 2, startDate);
+      expect(endDate2.toISOString()).toBe("2027-03-15T00:00:00.000Z");
+    });
 
-    it('should handle month-end edge cases correctly', () => {
+    it("should handle month-end edge cases correctly", () => {
       // Test with January 31 (should become February 28 in non-leap year)
-      const startDate = new Date('2025-01-31T00:00:00Z')
-      const endDate = calculateGiftEndDate('monthly', 1, startDate)
+      const startDate = new Date("2025-01-31T00:00:00Z");
+      const endDate = calculateGiftEndDate("monthly", 1, startDate);
 
       // Check the result
-      expect(endDate.getUTCFullYear()).toBe(2025)
+      expect(endDate.getUTCFullYear()).toBe(2025);
       // February is month 1 (0-indexed)
-      expect(endDate.getUTCMonth()).toBe(1)
-      expect(endDate.getUTCDate()).toBe(28)
+      expect(endDate.getUTCMonth()).toBe(1);
+      expect(endDate.getUTCDate()).toBe(28);
 
       // Test with a leap year
-      const leapYearStart = new Date('2024-01-31T00:00:00Z')
-      const leapYearEnd = calculateGiftEndDate('monthly', 1, leapYearStart)
+      const leapYearStart = new Date("2024-01-31T00:00:00Z");
+      const leapYearEnd = calculateGiftEndDate("monthly", 1, leapYearStart);
 
       // Check the result
-      expect(leapYearEnd.getUTCFullYear()).toBe(2024)
+      expect(leapYearEnd.getUTCFullYear()).toBe(2024);
       // February is month 1 (0-indexed)
-      expect(leapYearEnd.getUTCMonth()).toBe(1)
-      expect(leapYearEnd.getUTCDate()).toBe(29)
-    })
+      expect(leapYearEnd.getUTCMonth()).toBe(1);
+      expect(leapYearEnd.getUTCDate()).toBe(29);
+    });
 
-    it('should handle existing trial subscriptions correctly', () => {
+    it("should handle existing trial subscriptions correctly", () => {
       // Simulate a trial end date
-      const trialEndDate = new Date('2025-05-01T17:14:40Z')
+      const trialEndDate = new Date("2025-05-01T17:14:40Z");
 
       // Add a 1-month gift subscription on top of the trial
-      const endDate = calculateGiftEndDate('monthly', 1, trialEndDate)
-      expect(endDate.toISOString()).toBe('2025-06-01T17:14:40.000Z')
-    })
+      const endDate = calculateGiftEndDate("monthly", 1, trialEndDate);
+      expect(endDate.toISOString()).toBe("2025-06-01T17:14:40.000Z");
+    });
 
-    it('should handle multiple gift subscriptions correctly', () => {
+    it("should handle multiple gift subscriptions correctly", () => {
       // Simulate an existing gift subscription end date
-      const existingGiftEndDate = new Date('2025-04-15T15:22:58Z')
+      const existingGiftEndDate = new Date("2025-04-15T15:22:58Z");
 
       // Add another 1-month gift subscription
-      const endDate = calculateGiftEndDate('monthly', 1, existingGiftEndDate)
-      expect(endDate.toISOString()).toBe('2025-05-15T15:22:58.000Z')
+      const endDate = calculateGiftEndDate("monthly", 1, existingGiftEndDate);
+      expect(endDate.toISOString()).toBe("2025-05-15T15:22:58.000Z");
 
       // Add a 1-year gift subscription to an existing monthly gift
-      const endDate2 = calculateGiftEndDate('annual', 1, existingGiftEndDate)
-      expect(endDate2.toISOString()).toBe('2026-04-15T15:22:58.000Z')
-    })
+      const endDate2 = calculateGiftEndDate("annual", 1, existingGiftEndDate);
+      expect(endDate2.toISOString()).toBe("2026-04-15T15:22:58.000Z");
+    });
 
-    it('should handle grace period correctly', () => {
+    it("should handle grace period correctly", () => {
       // Define grace period end date (April 30, 2025)
-      const gracePeriodEnd = new Date('2025-04-30T23:59:59.999Z')
+      const gracePeriodEnd = new Date("2025-04-30T23:59:59.999Z");
 
       // Test that gift subscription extends from grace period end
-      const endDate = calculateGiftEndDate('monthly', 1, gracePeriodEnd)
-      expect(endDate.toISOString()).toBe('2025-05-30T23:59:59.999Z')
+      const endDate = calculateGiftEndDate("monthly", 1, gracePeriodEnd);
+      expect(endDate.toISOString()).toBe("2025-05-30T23:59:59.999Z");
 
       // Test with multiple months
-      const endDate2 = calculateGiftEndDate('monthly', 3, gracePeriodEnd)
-      expect(endDate2.toISOString()).toBe('2025-07-30T23:59:59.999Z')
+      const endDate2 = calculateGiftEndDate("monthly", 3, gracePeriodEnd);
+      expect(endDate2.toISOString()).toBe("2025-07-30T23:59:59.999Z");
 
       // Test with annual subscription
-      const endDate3 = calculateGiftEndDate('annual', 1, gracePeriodEnd)
-      expect(endDate3.toISOString()).toBe('2026-04-30T23:59:59.999Z')
-    })
-  })
+      const endDate3 = calculateGiftEndDate("annual", 1, gracePeriodEnd);
+      expect(endDate3.toISOString()).toBe("2026-04-30T23:59:59.999Z");
+    });
+  });
 
-  describe('Error handling', () => {
-    it('should handle malformed request bodies gracefully', async () => {
+  describe("Error handling", () => {
+    it("should handle malformed request bodies gracefully", async () => {
       const { req, res } = createMocks({
         body: {},
         headers: {
-          'stripe-signature': 'valid_signature',
-          'stripe-webhook-secret': 'test_secret',
+          "stripe-signature": "valid_signature",
+          "stripe-webhook-secret": "test_secret",
         },
-        method: 'POST',
-      })
+        method: "POST",
+      });
 
-      await handler(req, res)
+      await handler(req, res);
 
-      expect(res.statusCode).toBe(200)
-      expect(res._getJSONData()).toStrictEqual({ received: true })
-    })
+      expect(res.statusCode).toBe(200);
+      expect(res._getJSONData()).toStrictEqual({ received: true });
+    });
 
-    it('should retry failed transactions', async () => {
+    it("should retry failed transactions", async () => {
       const { req, res } = createMocks({
         headers: {
-          'retry-test': 'true',
-          'stripe-signature': 'valid_signature',
-          'stripe-webhook-secret': 'test_secret',
+          "retry-test": "true",
+          "stripe-signature": "valid_signature",
+          "stripe-webhook-secret": "test_secret",
         },
-        method: 'POST',
-      })
+        method: "POST",
+      });
 
       // Mock the handler implementation for retry testing
       const mockHandler = vi.fn().mockImplementation((req, res) => {
-        if (req.headers['retry-test'] === 'true') {
+        if (req.headers["retry-test"] === "true") {
           // Simulate success after retry
           return res.status(200).json({
             attempts: 2,
             received: true,
             retried: true,
-          })
+          });
         }
-        return res.status(200).json({ received: true })
-      })
+        return res.status(200).json({ received: true });
+      });
 
       // Replace the mocked handler temporarily
-      await vi.mocked(handler).withImplementation(mockHandler, async () => handler(req, res))
+      await vi.mocked(handler).withImplementation(mockHandler, async () => handler(req, res));
 
-      expect(res.statusCode).toBe(200)
+      expect(res.statusCode).toBe(200);
       expect(res._getJSONData()).toStrictEqual({
         attempts: 2,
         received: true,
         retried: true,
-      })
-      expect(mockHandler).toHaveBeenCalledOnce()
-    })
+      });
+      expect(mockHandler).toHaveBeenCalledOnce();
+    });
 
-    it('should handle transaction timeouts', async () => {
+    it("should handle transaction timeouts", async () => {
       const { req, res } = createMocks({
         headers: {
-          'stripe-signature': 'valid_signature',
-          'stripe-webhook-secret': 'test_secret',
-          'timeout-test': 'true',
+          "stripe-signature": "valid_signature",
+          "stripe-webhook-secret": "test_secret",
+          "timeout-test": "true",
         },
-        method: 'POST',
-      })
+        method: "POST",
+      });
 
       // Mock the handler implementation for timeout testing
       const mockHandler = vi.fn().mockImplementation((req, res) => {
-        if (req.headers['timeout-test'] === 'true') {
+        if (req.headers["timeout-test"] === "true") {
           // Simulate a transaction timeout that eventually fails
           return res.status(500).json({
-            error: 'Webhook processing failed',
+            error: "Webhook processing failed",
             timeout: true,
-          })
+          });
         }
-        return res.status(200).json({ received: true })
-      })
+        return res.status(200).json({ received: true });
+      });
 
       // Replace the mocked handler temporarily
-      await vi.mocked(handler).withImplementation(mockHandler, async () => handler(req, res))
+      await vi.mocked(handler).withImplementation(mockHandler, async () => handler(req, res));
 
-      expect(res.statusCode).toBe(500)
+      expect(res.statusCode).toBe(500);
       expect(res._getJSONData()).toStrictEqual({
-        error: 'Webhook processing failed',
+        error: "Webhook processing failed",
         timeout: true,
-      })
-      expect(mockHandler).toHaveBeenCalledOnce()
-    })
-  })
-})
+      });
+      expect(mockHandler).toHaveBeenCalledOnce();
+    });
+  });
+});

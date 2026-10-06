@@ -1,44 +1,44 @@
-import type { Session } from 'next-auth'
-import type { SessionContextValue } from 'next-auth/react'
-import type { NextRouter } from 'next/router'
-import type { SWRResponse } from 'swr'
-import { vi } from 'vitest'
+import type { Session } from "next-auth";
+import type { SessionContextValue } from "next-auth/react";
+import type { NextRouter } from "next/router";
+import type { SWRResponse } from "swr";
+import { vi } from "vite-plus/test";
 
-type AuthenticatedSession = Extract<SessionContextValue, { status: 'authenticated' }>
-type StreamStatus = { stream_online: boolean }
+type AuthenticatedSession = Extract<SessionContextValue, { status: "authenticated" }>;
+type StreamStatus = { stream_online: boolean };
 
 export const createMockSession = function createMockSession(
   overrides?: Partial<Session>,
 ): AuthenticatedSession {
   const session = {
-    expires: '1',
+    expires: "1",
     user: {
-      email: 'test@example.com',
-      id: 'user-123',
-      image: 'https://example.com/avatar.png',
+      email: "test@example.com",
+      id: "user-123",
+      image: "https://example.com/avatar.png",
       isImpersonating: false,
-      locale: 'en',
-      name: 'Test User',
-      scope: '',
-      twitchId: 'twitch-123',
+      locale: "en",
+      name: "Test User",
+      scope: "",
+      twitchId: "twitch-123",
     },
     ...overrides,
-  } satisfies Session
+  } satisfies Session;
 
   return {
     data: session,
-    status: 'authenticated',
+    status: "authenticated",
     update: vi.fn<(data?: unknown) => Promise<Session | null>>().mockResolvedValue(session),
-  }
-}
+  };
+};
 
 export const createMockRouter = function createMockRouter(
   overrides?: Partial<NextRouter>,
 ): NextRouter {
   return {
-    asPath: '',
+    asPath: "",
     back: vi.fn(),
-    basePath: '',
+    basePath: "",
     beforePopState: vi.fn(),
     events: {
       emit: vi.fn(),
@@ -50,16 +50,16 @@ export const createMockRouter = function createMockRouter(
     isLocaleDomain: false,
     isPreview: false,
     isReady: true,
-    pathname: '/dashboard',
+    pathname: "/dashboard",
     prefetch: vi.fn(),
     push: vi.fn(),
     query: {},
     reload: vi.fn(),
     replace: vi.fn(),
-    route: '',
+    route: "",
     ...overrides,
-  } satisfies NextRouter
-}
+  } satisfies NextRouter;
+};
 
 export const createMockSWR = function createMockSWR(
   overrides?: Partial<SWRResponse<StreamStatus, unknown>>,
@@ -71,5 +71,5 @@ export const createMockSWR = function createMockSWR(
     isValidating: false,
     mutate: vi.fn(),
     ...overrides,
-  } satisfies SWRResponse<StreamStatus, unknown>
-}
+  } satisfies SWRResponse<StreamStatus, unknown>;
+};

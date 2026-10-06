@@ -1,86 +1,86 @@
 // @ts-nocheck
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
-import { useSession } from 'next-auth/react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { useSession } from "next-auth/react";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import BillingPage from '@/pages/dashboard/billing'
+import BillingPage from "@/pages/dashboard/billing";
 
 const { messageMock } = vi.hoisted(() => ({
   messageMock: {
     error: vi.fn(),
     info: vi.fn(),
   },
-}))
+}));
 
 // Mock the dependencies
-vi.mock('next-auth/react', () => ({
+vi.mock("next-auth/react", () => ({
   useSession: vi.fn(),
-}))
+}));
 
-vi.mock('next/head', () => ({
+vi.mock("next/head", () => ({
   default: ({ children }) => <>{children}</>,
-}))
+}));
 
-vi.mock('@/utils/subscription', () => ({
+vi.mock("@/utils/subscription", () => ({
   getSubscriptionStatusInfo: vi.fn().mockReturnValue({
-    badge: 'gold',
-    message: 'Renews on April 20, 2026',
-    type: 'success',
+    badge: "gold",
+    message: "Renews on April 20, 2026",
+    type: "success",
   }),
-}))
+}));
 
-vi.mock('@/lib/server/dashboard-access', () => ({
+vi.mock("@/lib/server/dashboard-access", () => ({
   requireDashboardAccess: () => async () => ({ props: {} }),
-}))
+}));
 
-vi.mock('@/components/Billing/billing-plans', () => ({
-  BillingPlans: () => <div data-testid='billing-plans'>Billing Plans</div>,
-}))
+vi.mock("@/components/Billing/billing-plans", () => ({
+  BillingPlans: () => <div data-testid="billing-plans">Billing Plans</div>,
+}));
 
-vi.mock('@/components/Billing/billing-overview', () => ({
+vi.mock("@/components/Billing/billing-overview", () => ({
   BillingOverview: ({ onOpenPortal }) => (
-    <div data-testid='billing-overview'>
-      <button onClick={onOpenPortal} type='button'>
+    <div data-testid="billing-overview">
+      <button onClick={onOpenPortal} type="button">
         Open billing portal
       </button>
     </div>
   ),
-}))
+}));
 
-vi.mock('@/components/Billing/payment-status-alert', () => ({
-  PaymentStatusAlert: () => <div data-testid='payment-status-alert'>Payment status alert</div>,
-}))
+vi.mock("@/components/Billing/payment-status-alert", () => ({
+  PaymentStatusAlert: () => <div data-testid="payment-status-alert">Payment status alert</div>,
+}));
 
-vi.mock('@/components/Subscription/subscription-alerts', () => ({
+vi.mock("@/components/Subscription/subscription-alerts", () => ({
   SubscriptionAlerts: ({ hideManageButton }) => (
-    <div data-testid='subscription-alerts'>hideManageButton:{String(hideManageButton)}</div>
+    <div data-testid="subscription-alerts">hideManageButton:{String(hideManageButton)}</div>
   ),
-}))
+}));
 
-vi.mock('@/components/Dashboard/header', () => ({
+vi.mock("@/components/Dashboard/header", () => ({
   default: ({ title, subtitle }) => (
     <div>
       <h1>{title}</h1>
       <p>{subtitle}</p>
     </div>
   ),
-}))
+}));
 
-vi.mock('@/components/Dashboard/dashboard-shell', () => ({
-  default: ({ children }) => <div data-testid='dashboard-shell'>{children}</div>,
-}))
+vi.mock("@/components/Dashboard/dashboard-shell", () => ({
+  default: ({ children }) => <div data-testid="dashboard-shell">{children}</div>,
+}));
 
-vi.mock('antd', () => ({
+vi.mock("antd", () => ({
   Typography: {
     Title: ({ children }) => <h1>{children}</h1>,
   },
   message: messageMock,
-}))
+}));
 
-vi.mock('@/contexts/subscription-context', () => ({
+vi.mock("@/contexts/subscription-context", () => ({
   useSubscriptionContext: () => ({
     creditBalance: 0,
-    formattedCreditBalance: '$0.00',
+    formattedCreditBalance: "$0.00",
     hasActivePlan: true,
     inGracePeriod: false,
     isLifetimePlan: false,
@@ -90,69 +90,69 @@ vi.mock('@/contexts/subscription-context', () => ({
       canceledAt: null,
       currentPeriodEnd: new Date(),
       currentPeriodStart: new Date(),
-      id: 'sub-123',
+      id: "sub-123",
       isGift: false,
-      status: 'ACTIVE',
-      stripeCustomerId: 'cus-123',
-      stripePriceId: 'price-123',
-      stripeSubscriptionId: 'sub-123',
-      tier: 'PRO',
-      userId: 'user-123',
+      status: "ACTIVE",
+      stripeCustomerId: "cus-123",
+      stripePriceId: "price-123",
+      stripeSubscriptionId: "sub-123",
+      tier: "PRO",
+      userId: "user-123",
     },
   }),
-}))
+}));
 
-describe('Dashboard Billing Page', () => {
+describe("Dashboard Billing Page", () => {
   beforeEach(() => {
-    vi.resetAllMocks()
-    global.fetch = vi.fn()
+    vi.resetAllMocks();
+    global.fetch = vi.fn();
 
     vi.mocked(useSession).mockReturnValue({
       data: {
-        expires: '1',
+        expires: "1",
         user: {
-          email: 'test@example.com',
-          id: 'user-123',
-          image: 'https://example.com/avatar.png',
+          email: "test@example.com",
+          id: "user-123",
+          image: "https://example.com/avatar.png",
           isImpersonating: false,
-          locale: 'en',
-          name: 'Test User',
-          role: 'user',
-          scope: '',
-          twitchId: '',
+          locale: "en",
+          name: "Test User",
+          role: "user",
+          scope: "",
+          twitchId: "",
         },
       },
-      status: 'authenticated',
+      status: "authenticated",
       update: vi.fn(),
-    })
-  })
+    });
+  });
 
-  it('renders the overview first and demotes plan selection below it', () => {
-    render(<BillingPage />)
+  it("renders the overview first and demotes plan selection below it", () => {
+    render(<BillingPage />);
 
-    expect(screen.getByRole('heading', { name: 'Billing' })).toBeInTheDocument()
-    expect(screen.queryByText(/your current plan, renewal date/iu)).not.toBeInTheDocument()
-    expect(screen.getByTestId('billing-overview')).toBeInTheDocument()
-    expect(screen.getByTestId('subscription-alerts')).toHaveTextContent('hideManageButton:true')
-    expect(screen.getByRole('heading', { name: 'Compare plans' })).toBeInTheDocument()
-    expect(screen.getByTestId('billing-plans')).toBeInTheDocument()
-  })
+    expect(screen.getByRole("heading", { name: "Billing" })).toBeInTheDocument();
+    expect(screen.queryByText(/your current plan, renewal date/iu)).not.toBeInTheDocument();
+    expect(screen.getByTestId("billing-overview")).toBeInTheDocument();
+    expect(screen.getByTestId("subscription-alerts")).toHaveTextContent("hideManageButton:true");
+    expect(screen.getByRole("heading", { name: "Compare plans" })).toBeInTheDocument();
+    expect(screen.getByTestId("billing-plans")).toBeInTheDocument();
+  });
 
-  it('shows inline guidance toast when no Stripe customer portal can be opened', async () => {
+  it("shows inline guidance toast when no Stripe customer portal can be opened", async () => {
     vi.mocked(global.fetch).mockResolvedValue({
       json: async () => ({
-        code: 'NO_STRIPE_CUSTOMER',
-        guidance: 'No active Stripe billing profile found.',
+        code: "NO_STRIPE_CUSTOMER",
+        guidance: "No active Stripe billing profile found.",
       }),
       ok: false,
-    } as Response)
+    } as Response);
 
-    render(<BillingPage />)
+    render(<BillingPage />);
 
-    fireEvent.click(screen.getByRole('button', { name: /open billing portal/iu }))
+    fireEvent.click(screen.getByRole("button", { name: /open billing portal/iu }));
 
     await waitFor(() => {
-      expect(messageMock.info).toHaveBeenCalledWith('No active Stripe billing profile found.')
-    })
-  })
-})
+      expect(messageMock.info).toHaveBeenCalledWith("No active Stripe billing profile found.");
+    });
+  });
+});

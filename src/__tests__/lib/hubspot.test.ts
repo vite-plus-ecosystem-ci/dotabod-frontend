@@ -1,197 +1,197 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-vi.mock('@sentry/nextjs', () => ({ captureException: vi.fn() }))
+vi.mock("@sentry/nextjs", () => ({ captureException: vi.fn() }));
 
 // Fresh module graph per test so the memoized property-creation promise resets.
 const load = async function load() {
-  const fetchMock = vi.fn<typeof fetch>()
-  vi.stubGlobal('fetch', fetchMock)
-  const sentry = await import('@sentry/nextjs')
-  const mod = await import('@/lib/hubspot')
+  const fetchMock = vi.fn<typeof fetch>();
+  vi.stubGlobal("fetch", fetchMock);
+  const sentry = await import("@sentry/nextjs");
+  const mod = await import("@/lib/hubspot");
   return {
     captureException: vi.mocked(sentry.captureException),
     fetchMock,
     ...mod,
-  }
-}
+  };
+};
 
 const res = (body: unknown = {}, status = 200) =>
   ({
     json: async () => body,
     ok: status >= 200 && status < 300,
     status,
-    statusText: 'OK',
-    text: async () => (typeof body === 'string' ? body : JSON.stringify(body)),
-  }) as any
+    statusText: "OK",
+    text: async () => (typeof body === "string" ? body : JSON.stringify(body)),
+  }) as any;
 
-const isUrl = (call: unknown[], suffix: string) => String(call[0]).endsWith(suffix)
-const bodyOf = (call: unknown[]) => JSON.parse((call[1] as any).body)
+const isUrl = (call: unknown[], suffix: string) => String(call[0]).endsWith(suffix);
+const bodyOf = (call: unknown[]) => JSON.parse((call[1] as any).body);
 
-describe('lib/hubspot', () => {
+describe("lib/hubspot", () => {
   beforeEach(() => {
-    vi.resetModules()
-  })
+    vi.resetModules();
+  });
 
-  describe('subscriptionToValue', () => {
-    it('maps tiers and statuses to the enum option values', async () => {
-      const { subscriptionToValue } = await load()
-      expect(subscriptionToValue(null)).toBe('free')
-      expect(subscriptionToValue({ tier: 'FREE' })).toBe('free')
-      expect(subscriptionToValue({})).toBe('free')
+  describe("subscriptionToValue", () => {
+    it("maps tiers and statuses to the enum option values", async () => {
+      const { subscriptionToValue } = await load();
+      expect(subscriptionToValue(null)).toBe("free");
+      expect(subscriptionToValue({ tier: "FREE" })).toBe("free");
+      expect(subscriptionToValue({})).toBe("free");
       expect(
-        subscriptionToValue({ status: 'ACTIVE', tier: 'PRO', transactionType: 'LIFETIME' }),
-      ).toBe('pro_lifetime')
-      expect(subscriptionToValue({ status: 'TRIALING', tier: 'PRO' })).toBe('pro_trial')
-      expect(subscriptionToValue({ status: 'PAST_DUE', tier: 'PRO' })).toBe('pro_past_due')
-      expect(subscriptionToValue({ status: 'ACTIVE', tier: 'PRO' })).toBe('pro')
-    })
+        subscriptionToValue({ status: "ACTIVE", tier: "PRO", transactionType: "LIFETIME" }),
+      ).toBe("pro_lifetime");
+      expect(subscriptionToValue({ status: "TRIALING", tier: "PRO" })).toBe("pro_trial");
+      expect(subscriptionToValue({ status: "PAST_DUE", tier: "PRO" })).toBe("pro_past_due");
+      expect(subscriptionToValue({ status: "ACTIVE", tier: "PRO" })).toBe("pro");
+    });
 
-    it('maps inactive and incomplete Pro rows to free', async () => {
-      const { subscriptionToValue } = await load()
+    it("maps inactive and incomplete Pro rows to free", async () => {
+      const { subscriptionToValue } = await load();
       expect(
-        subscriptionToValue({ status: 'CANCELED', tier: 'PRO', transactionType: 'LIFETIME' }),
-      ).toBe('free')
-      expect(subscriptionToValue({ status: 'INCOMPLETE', tier: 'PRO' })).toBe('free')
-      expect(subscriptionToValue({ tier: 'PRO' })).toBe('free')
-    })
-  })
+        subscriptionToValue({ status: "CANCELED", tier: "PRO", transactionType: "LIFETIME" }),
+      ).toBe("free");
+      expect(subscriptionToValue({ status: "INCOMPLETE", tier: "PRO" })).toBe("free");
+      expect(subscriptionToValue({ tier: "PRO" })).toBe("free");
+    });
+  });
 
-  describe('syncHubSpotContact', () => {
-    const PATCH_SUFFIX = `/objects/contacts/${encodeURIComponent('a@b.com')}?idProperty=email`
-    const isPatch = (call: unknown[]) => isUrl(call, PATCH_SUFFIX)
+  describe("syncHubSpotContact", () => {
+    const PATCH_SUFFIX = `/objects/contacts/${encodeURIComponent("a@b.com")}?idProperty=email`;
+    const isPatch = (call: unknown[]) => isUrl(call, PATCH_SUFFIX);
 
-    it('creates both properties and patches the contact by email with the subscription', async () => {
-      const { fetchMock, syncHubSpotContact } = await load()
-      fetchMock.mockResolvedValue(res())
+    it("creates both properties and patches the contact by email with the subscription", async () => {
+      const { fetchMock, syncHubSpotContact } = await load();
+      fetchMock.mockResolvedValue(res());
 
       await expect(
-        syncHubSpotContact('tok', {
-          email: 'a@b.com',
-          subscription: 'pro',
-          username: 'gamer',
+        syncHubSpotContact("tok", {
+          email: "a@b.com",
+          subscription: "pro",
+          username: "gamer",
         }),
-      ).resolves.toBeTruthy()
+      ).resolves.toBeTruthy();
 
-      const propertyCalls = fetchMock.mock.calls.filter((c) => isUrl(c, '/properties/contacts'))
-      expect(propertyCalls).toHaveLength(2)
+      const propertyCalls = fetchMock.mock.calls.filter((c) => isUrl(c, "/properties/contacts"));
+      expect(propertyCalls).toHaveLength(2);
 
-      const patch = fetchMock.mock.calls.find(isPatch)
-      expect(patch).toBeDefined()
-      expect((patch as unknown[])[1]).toMatchObject({ method: 'PATCH' })
+      const patch = fetchMock.mock.calls.find(isPatch);
+      expect(patch).toBeDefined();
+      expect((patch as unknown[])[1]).toMatchObject({ method: "PATCH" });
       expect(bodyOf(patch as unknown[])).toStrictEqual({
-        properties: { dotabod_subscription: 'pro', twitch_username: 'gamer' },
-      })
-    })
+        properties: { dotabod_subscription: "pro", twitch_username: "gamer" },
+      });
+    });
 
-    it('omits dotabod_subscription when no subscription value is provided', async () => {
-      const { fetchMock, syncHubSpotContact } = await load()
-      fetchMock.mockResolvedValue(res())
+    it("omits dotabod_subscription when no subscription value is provided", async () => {
+      const { fetchMock, syncHubSpotContact } = await load();
+      fetchMock.mockResolvedValue(res());
 
-      await syncHubSpotContact('tok', { email: 'a@b.com', username: 'gamer' })
+      await syncHubSpotContact("tok", { email: "a@b.com", username: "gamer" });
 
-      const patch = fetchMock.mock.calls.find(isPatch)
+      const patch = fetchMock.mock.calls.find(isPatch);
       expect(bodyOf(patch as unknown[]).properties).toStrictEqual({
-        twitch_username: 'gamer',
-      })
-    })
+        twitch_username: "gamer",
+      });
+    });
 
-    it('treats a 409 on property creation as success and still patches', async () => {
-      const { fetchMock, syncHubSpotContact } = await load()
+    it("treats a 409 on property creation as success and still patches", async () => {
+      const { fetchMock, syncHubSpotContact } = await load();
       fetchMock.mockImplementation(async (url: unknown) =>
-        String(url).endsWith('/properties/contacts') ? res({}, 409) : res(),
-      )
+        String(url).endsWith("/properties/contacts") ? res({}, 409) : res(),
+      );
 
-      await syncHubSpotContact('tok', { email: 'a@b.com', subscription: 'pro', username: 'g' })
+      await syncHubSpotContact("tok", { email: "a@b.com", subscription: "pro", username: "g" });
 
-      expect(fetchMock.mock.calls.some(isPatch)).toBeTruthy()
-    })
+      expect(fetchMock.mock.calls.some(isPatch)).toBeTruthy();
+    });
 
-    it('falls back to creating the contact when PATCH returns 404', async () => {
-      const { fetchMock, syncHubSpotContact } = await load()
+    it("falls back to creating the contact when PATCH returns 404", async () => {
+      const { fetchMock, syncHubSpotContact } = await load();
       fetchMock.mockImplementation(async (url: unknown) =>
         String(url).endsWith(PATCH_SUFFIX) ? res({}, 404) : res(),
-      )
+      );
 
-      await syncHubSpotContact('tok', { email: 'a@b.com', subscription: 'pro', username: 'gamer' })
+      await syncHubSpotContact("tok", { email: "a@b.com", subscription: "pro", username: "gamer" });
 
       const create = fetchMock.mock.calls.find(
-        (c) => isUrl(c, '/objects/contacts') && (c[1] as { method?: string }).method === 'POST',
-      )
-      expect(create).toBeDefined()
+        (c) => isUrl(c, "/objects/contacts") && (c[1] as { method?: string }).method === "POST",
+      );
+      expect(create).toBeDefined();
       expect(bodyOf(create as unknown[]).properties).toMatchObject({
-        dotabod_subscription: 'pro',
-        email: 'a@b.com',
-        twitch_username: 'gamer',
-      })
-    })
+        dotabod_subscription: "pro",
+        email: "a@b.com",
+        twitch_username: "gamer",
+      });
+    });
 
-    it('retries the PATCH when create-POST returns 409 (race) and does not report', async () => {
-      const { fetchMock, captureException, syncHubSpotContact } = await load()
-      let patchCalls = 0
+    it("retries the PATCH when create-POST returns 409 (race) and does not report", async () => {
+      const { fetchMock, captureException, syncHubSpotContact } = await load();
+      let patchCalls = 0;
       fetchMock.mockImplementation(async (url: unknown, init?: unknown) => {
-        const u = String(url)
+        const u = String(url);
         if (u.endsWith(PATCH_SUFFIX)) {
-          patchCalls += 1
+          patchCalls += 1;
           // First PATCH: contact missing. Retry PATCH after 409: now exists.
-          return patchCalls === 1 ? res({}, 404) : res()
+          return patchCalls === 1 ? res({}, 404) : res();
         }
-        if (u.endsWith('/objects/contacts') && (init as any)?.method === 'POST') {
-          return res({}, 409)
+        if (u.endsWith("/objects/contacts") && (init as any)?.method === "POST") {
+          return res({}, 409);
         }
-        return res()
-      })
+        return res();
+      });
 
-      await syncHubSpotContact('tok', { email: 'a@b.com', subscription: 'pro', username: 'g' })
+      await syncHubSpotContact("tok", { email: "a@b.com", subscription: "pro", username: "g" });
 
-      expect(patchCalls).toBe(2)
-      expect(captureException).not.toHaveBeenCalled()
-    })
+      expect(patchCalls).toBe(2);
+      expect(captureException).not.toHaveBeenCalled();
+    });
 
-    it('reports to Sentry when the create-409 retry PATCH also fails', async () => {
-      const { fetchMock, captureException, syncHubSpotContact } = await load()
-      let patchCalls = 0
+    it("reports to Sentry when the create-409 retry PATCH also fails", async () => {
+      const { fetchMock, captureException, syncHubSpotContact } = await load();
+      let patchCalls = 0;
       fetchMock.mockImplementation(async (url: unknown, init?: unknown) => {
-        const u = String(url)
+        const u = String(url);
         if (u.endsWith(PATCH_SUFFIX)) {
-          patchCalls += 1
-          return patchCalls === 1 ? res({}, 404) : res({}, 500)
+          patchCalls += 1;
+          return patchCalls === 1 ? res({}, 404) : res({}, 500);
         }
-        if (u.endsWith('/objects/contacts') && (init as any)?.method === 'POST') {
-          return res({}, 409)
+        if (u.endsWith("/objects/contacts") && (init as any)?.method === "POST") {
+          return res({}, 409);
         }
-        return res()
-      })
+        return res();
+      });
 
       await expect(
-        syncHubSpotContact('tok', { email: 'a@b.com', subscription: 'pro', username: 'g' }),
-      ).resolves.toBeFalsy()
-      expect(patchCalls).toBe(2)
-      expect(captureException).toHaveBeenCalledOnce()
-    })
+        syncHubSpotContact("tok", { email: "a@b.com", subscription: "pro", username: "g" }),
+      ).resolves.toBeFalsy();
+      expect(patchCalls).toBe(2);
+      expect(captureException).toHaveBeenCalledOnce();
+    });
 
-    it('never throws and reports to Sentry when the patch fails', async () => {
-      const { fetchMock, captureException, syncHubSpotContact } = await load()
+    it("never throws and reports to Sentry when the patch fails", async () => {
+      const { fetchMock, captureException, syncHubSpotContact } = await load();
       fetchMock.mockImplementation(async (url: unknown) =>
         String(url).endsWith(PATCH_SUFFIX) ? res({}, 500) : res(),
-      )
+      );
 
       await expect(
-        syncHubSpotContact('tok', { email: 'a@b.com', subscription: 'pro', username: 'g' }),
-      ).resolves.toBeFalsy()
-      expect(captureException).toHaveBeenCalledOnce()
-    })
+        syncHubSpotContact("tok", { email: "a@b.com", subscription: "pro", username: "g" }),
+      ).resolves.toBeFalsy();
+      expect(captureException).toHaveBeenCalledOnce();
+    });
 
-    it('reports a non-409 property-create failure without throwing or upserting', async () => {
-      const { fetchMock, captureException, syncHubSpotContact } = await load()
+    it("reports a non-409 property-create failure without throwing or upserting", async () => {
+      const { fetchMock, captureException, syncHubSpotContact } = await load();
       fetchMock.mockImplementation(async (url: unknown) =>
-        String(url).endsWith('/properties/contacts') ? res({}, 400) : res(),
-      )
+        String(url).endsWith("/properties/contacts") ? res({}, 400) : res(),
+      );
 
       await expect(
-        syncHubSpotContact('tok', { email: 'a@b.com', subscription: 'pro', username: 'g' }),
-      ).resolves.toBeFalsy()
-      expect(captureException).toHaveBeenCalledOnce()
-      expect(fetchMock.mock.calls.some((c) => isUrl(c, '/contacts/batch/upsert'))).toBeFalsy()
-    })
-  })
-})
+        syncHubSpotContact("tok", { email: "a@b.com", subscription: "pro", username: "g" }),
+      ).resolves.toBeFalsy();
+      expect(captureException).toHaveBeenCalledOnce();
+      expect(fetchMock.mock.calls.some((c) => isUrl(c, "/contacts/batch/upsert"))).toBeFalsy();
+    });
+  });
+});
