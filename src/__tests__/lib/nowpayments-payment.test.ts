@@ -1,11 +1,11 @@
-import type { NowPaymentsInvoice } from '@prisma/client'
-import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { NowPaymentsInvoice } from "@prisma/client";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-vi.stubEnv('NOWPAYMENTS_API_KEY', 'test-api-key')
-vi.stubEnv('NOWPAYMENTS_IPN_SECRET', 'test-ipn-secret')
+vi.stubEnv("NOWPAYMENTS_API_KEY", "test-api-key");
+vi.stubEnv("NOWPAYMENTS_IPN_SECRET", "test-ipn-secret");
 
 const mocks = vi.hoisted(() => {
-  const tx = {}
+  const tx = {};
   return {
     handleInvoiceEvent: vi.fn(),
     prisma: {
@@ -22,175 +22,175 @@ const mocks = vi.hoisted(() => {
       },
     },
     tx,
-  }
-})
+  };
+});
 
-vi.mock('@/lib/db', () => ({ default: mocks.prisma }))
-vi.mock('@/lib/stripe-server', () => ({ stripe: mocks.stripe }))
-vi.mock('@/lib/stripe/handlers/invoice-events', () => ({
+vi.mock("@/lib/db", () => ({ default: mocks.prisma }));
+vi.mock("@/lib/stripe-server", () => ({ stripe: mocks.stripe }));
+vi.mock("@/lib/stripe/handlers/invoice-events", () => ({
   handleInvoiceEvent: mocks.handleInvoiceEvent,
-}))
+}));
 
-type NowPaymentsPaymentStatus = import('@/lib/nowpayments').NowPaymentsPaymentStatus
-let processConfirmedNowPaymentsPayment: typeof import('@/lib/nowpayments-payment').processConfirmedNowPaymentsPayment
+type NowPaymentsPaymentStatus = import("@/lib/nowpayments").NowPaymentsPaymentStatus;
+let processConfirmedNowPaymentsPayment: typeof import("@/lib/nowpayments-payment").processConfirmedNowPaymentsPayment;
 
 beforeAll(async () => {
-  ;({ processConfirmedNowPaymentsPayment } = await import('@/lib/nowpayments-payment'))
-})
+  ({ processConfirmedNowPaymentsPayment } = await import("@/lib/nowpayments-payment"));
+});
 
 const baseInvoice: NowPaymentsInvoice = {
   actuallyPaid: null,
-  createdAt: new Date('2026-05-18T00:00:00.000Z'),
-  hostedInvoiceUrl: 'https://nowpayments.io/payment/?iid=np_inv_1',
-  id: 'row_1',
+  createdAt: new Date("2026-05-18T00:00:00.000Z"),
+  hostedInvoiceUrl: "https://nowpayments.io/payment/?iid=np_inv_1",
+  id: "row_1",
   lastWebhookAt: null,
   metadata: {},
-  nowPaymentsId: 'np_inv_1',
+  nowPaymentsId: "np_inv_1",
   payAmount: null,
   payCurrency: null,
   paymentId: null,
   priceAmount: 13,
-  priceCurrency: 'usd',
-  status: 'waiting',
-  stripeCustomerId: 'cus_1',
-  stripeInvoiceId: 'in_1',
-  updatedAt: new Date('2026-05-18T00:00:00.000Z'),
-  userId: 'user_1',
-}
+  priceCurrency: "usd",
+  status: "waiting",
+  stripeCustomerId: "cus_1",
+  stripeInvoiceId: "in_1",
+  updatedAt: new Date("2026-05-18T00:00:00.000Z"),
+  userId: "user_1",
+};
 
 const basePayment = {
   actually_paid: 13.05,
   invoice_id: 1234,
-  order_id: 'in_1',
-  pay_address: 'TXYZ',
+  order_id: "in_1",
+  pay_address: "TXYZ",
   pay_amount: 13.05,
-  pay_currency: 'usdttrc20',
+  pay_currency: "usdttrc20",
   payment_id: 9999,
-  payment_status: 'finished',
+  payment_status: "finished",
   price_amount: 13,
-  price_currency: 'usd',
-} as NowPaymentsPaymentStatus
+  price_currency: "usd",
+} as NowPaymentsPaymentStatus;
 
-describe('processConfirmedNowPaymentsPayment', () => {
+describe("processConfirmedNowPaymentsPayment", () => {
   beforeEach(() => {
-    vi.stubEnv('NOWPAYMENTS_API_KEY', 'test-api-key')
-    vi.stubEnv('NOWPAYMENTS_IPN_SECRET', 'test-ipn-secret')
-    mocks.prisma.$transaction.mockImplementation(async (cb) => await cb(mocks.tx))
-    mocks.handleInvoiceEvent.mockResolvedValue(true)
-    mocks.prisma.subscription.findFirst.mockResolvedValue({ id: 'sub_1' })
-  })
+    vi.stubEnv("NOWPAYMENTS_API_KEY", "test-api-key");
+    vi.stubEnv("NOWPAYMENTS_IPN_SECRET", "test-ipn-secret");
+    mocks.prisma.$transaction.mockImplementation(async (cb) => await cb(mocks.tx));
+    mocks.handleInvoiceEvent.mockResolvedValue(true);
+    mocks.prisma.subscription.findFirst.mockResolvedValue({ id: "sub_1" });
+  });
 
-  it('marks an open Stripe invoice paid and runs the invoice handler', async () => {
+  it("marks an open Stripe invoice paid and runs the invoice handler", async () => {
     const paidInvoice = {
-      customer: 'cus_1',
-      id: 'in_1',
-      metadata: { isCryptoPayment: 'true', paymentProvider: 'nowpayments' },
-      status: 'paid',
-    }
-    mocks.stripe.invoices.retrieve.mockResolvedValue({ ...paidInvoice, status: 'open' })
-    mocks.stripe.invoices.pay.mockResolvedValue(paidInvoice)
+      customer: "cus_1",
+      id: "in_1",
+      metadata: { isCryptoPayment: "true", paymentProvider: "nowpayments" },
+      status: "paid",
+    };
+    mocks.stripe.invoices.retrieve.mockResolvedValue({ ...paidInvoice, status: "open" });
+    mocks.stripe.invoices.pay.mockResolvedValue(paidInvoice);
 
-    const result = await processConfirmedNowPaymentsPayment(baseInvoice, basePayment)
+    const result = await processConfirmedNowPaymentsPayment(baseInvoice, basePayment);
 
-    expect(result.reason).toBe('processed')
-    expect(result.stripeInvoiceMarkedPaid).toBeTruthy()
-    expect(result.subscriptionCreated).toBeTruthy()
+    expect(result.reason).toBe("processed");
+    expect(result.stripeInvoiceMarkedPaid).toBeTruthy();
+    expect(result.subscriptionCreated).toBeTruthy();
     expect(mocks.stripe.invoices.pay).toHaveBeenCalledWith(
-      'in_1',
+      "in_1",
       { paid_out_of_band: true },
-      { idempotencyKey: 'nowpayments-np_inv_1' },
-    )
-    expect(mocks.handleInvoiceEvent).toHaveBeenCalledWith(paidInvoice, mocks.tx)
-    expect(mocks.prisma.nowPaymentsInvoice.update).toHaveBeenCalledOnce()
+      { idempotencyKey: "nowpayments-np_inv_1" },
+    );
+    expect(mocks.handleInvoiceEvent).toHaveBeenCalledWith(paidInvoice, mocks.tx);
+    expect(mocks.prisma.nowPaymentsInvoice.update).toHaveBeenCalledOnce();
     expect(mocks.prisma.nowPaymentsInvoice.update).toHaveBeenCalledWith({
       data: expect.objectContaining({
         lastWebhookAt: expect.any(Date),
         metadata: expect.objectContaining({
-          invoiceId: 'in_1',
-          nowPaymentsId: 'np_inv_1',
-          paymentId: '9999',
+          invoiceId: "in_1",
+          nowPaymentsId: "np_inv_1",
+          paymentId: "9999",
           processedSuccessfully: true,
         }),
-        payCurrency: 'usdttrc20',
-        paymentId: '9999',
-        status: 'finished',
+        payCurrency: "usdttrc20",
+        paymentId: "9999",
+        status: "finished",
       }),
-      where: { nowPaymentsId: 'np_inv_1' },
-    })
-  })
+      where: { nowPaymentsId: "np_inv_1" },
+    });
+  });
 
-  it('does not flip status to finished when Stripe work fails', async () => {
-    mocks.stripe.invoices.retrieve.mockResolvedValue({ id: 'in_1', status: 'open' })
-    mocks.stripe.invoices.pay.mockResolvedValue({ id: 'in_1', status: 'paid' })
-    mocks.handleInvoiceEvent.mockResolvedValue(false)
+  it("does not flip status to finished when Stripe work fails", async () => {
+    mocks.stripe.invoices.retrieve.mockResolvedValue({ id: "in_1", status: "open" });
+    mocks.stripe.invoices.pay.mockResolvedValue({ id: "in_1", status: "paid" });
+    mocks.handleInvoiceEvent.mockResolvedValue(false);
 
-    await expect(processConfirmedNowPaymentsPayment(baseInvoice, basePayment)).rejects.toThrow()
+    await expect(processConfirmedNowPaymentsPayment(baseInvoice, basePayment)).rejects.toThrow();
 
     // Failure update should NOT set status — it must only record metadata so the
     // Row remains at its prior status for the next webhook to retry against.
-    const failureCall = mocks.prisma.nowPaymentsInvoice.update.mock.calls.at(-1)?.[0]
-    expect(failureCall?.data?.status).toBeUndefined()
-    expect(failureCall?.data?.metadata).toMatchObject({ processedSuccessfully: false })
-  })
+    const failureCall = mocks.prisma.nowPaymentsInvoice.update.mock.calls.at(-1)?.[0];
+    expect(failureCall?.data?.status).toBeUndefined();
+    expect(failureCall?.data?.metadata).toMatchObject({ processedSuccessfully: false });
+  });
 
-  it('skips work that was already processed successfully', async () => {
+  it("skips work that was already processed successfully", async () => {
     const processed: NowPaymentsInvoice = {
       ...baseInvoice,
-      lastWebhookAt: new Date('2026-05-18T01:00:00.000Z'),
+      lastWebhookAt: new Date("2026-05-18T01:00:00.000Z"),
       metadata: { processedSuccessfully: true },
-      status: 'finished',
-    }
-    const result = await processConfirmedNowPaymentsPayment(processed, basePayment)
+      status: "finished",
+    };
+    const result = await processConfirmedNowPaymentsPayment(processed, basePayment);
 
-    expect(result.reason).toBe('already_processed')
-    expect(mocks.stripe.invoices.pay).not.toHaveBeenCalled()
-    expect(mocks.handleInvoiceEvent).not.toHaveBeenCalled()
-    expect(mocks.prisma.nowPaymentsInvoice.update).not.toHaveBeenCalled()
-  })
+    expect(result.reason).toBe("already_processed");
+    expect(mocks.stripe.invoices.pay).not.toHaveBeenCalled();
+    expect(mocks.handleInvoiceEvent).not.toHaveBeenCalled();
+    expect(mocks.prisma.nowPaymentsInvoice.update).not.toHaveBeenCalled();
+  });
 
-  it('skips an unconfirmed status without touching Stripe', async () => {
+  it("skips an unconfirmed status without touching Stripe", async () => {
     const result = await processConfirmedNowPaymentsPayment(baseInvoice, {
       ...basePayment,
-      payment_status: 'waiting',
-    })
-    expect(result.reason).toBe('not_confirmed')
-    expect(mocks.stripe.invoices.retrieve).not.toHaveBeenCalled()
-  })
+      payment_status: "waiting",
+    });
+    expect(result.reason).toBe("not_confirmed");
+    expect(mocks.stripe.invoices.retrieve).not.toHaveBeenCalled();
+  });
 
-  it('handles an invoice that Stripe already marked paid', async () => {
+  it("handles an invoice that Stripe already marked paid", async () => {
     const paidInvoice = {
-      customer: 'cus_1',
-      id: 'in_1',
-      metadata: { isCryptoPayment: 'true', paymentProvider: 'nowpayments' },
-      status: 'paid',
-    }
-    mocks.stripe.invoices.retrieve.mockResolvedValue(paidInvoice)
+      customer: "cus_1",
+      id: "in_1",
+      metadata: { isCryptoPayment: "true", paymentProvider: "nowpayments" },
+      status: "paid",
+    };
+    mocks.stripe.invoices.retrieve.mockResolvedValue(paidInvoice);
 
-    const result = await processConfirmedNowPaymentsPayment(baseInvoice, basePayment)
+    const result = await processConfirmedNowPaymentsPayment(baseInvoice, basePayment);
 
-    expect(result.reason).toBe('processed')
-    expect(result.stripeInvoiceMarkedPaid).toBeFalsy()
-    expect(mocks.stripe.invoices.pay).not.toHaveBeenCalled()
-    expect(mocks.handleInvoiceEvent).toHaveBeenCalledWith(paidInvoice, mocks.tx)
-  })
+    expect(result.reason).toBe("processed");
+    expect(result.stripeInvoiceMarkedPaid).toBeFalsy();
+    expect(mocks.stripe.invoices.pay).not.toHaveBeenCalled();
+    expect(mocks.handleInvoiceEvent).toHaveBeenCalledWith(paidInvoice, mocks.tx);
+  });
 
-  it('writes failure metadata and rethrows when the invoice handler fails', async () => {
-    mocks.stripe.invoices.retrieve.mockResolvedValue({ id: 'in_1', status: 'open' })
-    mocks.stripe.invoices.pay.mockResolvedValue({ id: 'in_1', status: 'paid' })
-    mocks.handleInvoiceEvent.mockResolvedValue(false)
+  it("writes failure metadata and rethrows when the invoice handler fails", async () => {
+    mocks.stripe.invoices.retrieve.mockResolvedValue({ id: "in_1", status: "open" });
+    mocks.stripe.invoices.pay.mockResolvedValue({ id: "in_1", status: "paid" });
+    mocks.handleInvoiceEvent.mockResolvedValue(false);
 
     await expect(processConfirmedNowPaymentsPayment(baseInvoice, basePayment)).rejects.toThrow(
       /Invoice handler returned false/u,
-    )
+    );
 
     expect(mocks.prisma.nowPaymentsInvoice.update).toHaveBeenLastCalledWith({
       data: {
         metadata: expect.objectContaining({
-          lastError: expect.stringContaining('Invoice handler returned false'),
+          lastError: expect.stringContaining("Invoice handler returned false"),
           processedSuccessfully: false,
         }),
       },
-      where: { nowPaymentsId: 'np_inv_1' },
-    })
-  })
-})
+      where: { nowPaymentsId: "np_inv_1" },
+    });
+  });
+});
