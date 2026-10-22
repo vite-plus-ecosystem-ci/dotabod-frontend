@@ -1,233 +1,233 @@
-import type { SubscriptionStatus, SubscriptionTier } from '@prisma/client'
-import { captureException } from '@sentry/nextjs'
-import type { NextApiHandler } from 'next'
-import type { Session } from 'next-auth'
-import { createMocks } from 'node-mocks-http'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import type { SubscriptionStatus, SubscriptionTier } from "@prisma/client";
+import { captureException } from "@sentry/nextjs";
+import type { NextApiHandler } from "next";
+import type { Session } from "next-auth";
+import { createMocks } from "node-mocks-http";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { getServerSession } from '@/lib/api/get-server-session'
-import prisma from '@/lib/db'
-import handler from '@/pages/api/install/[token]'
-import { canAccessFeature, getSubscription } from '@/utils/subscription'
+import { getServerSession } from "@/lib/api/get-server-session";
+import prisma from "@/lib/db";
+import handler from "@/pages/api/install/[token]";
+import { canAccessFeature, getSubscription } from "@/utils/subscription";
 
 // Mock the auth module to prevent environment variable checks
-vi.mock('@/lib/auth', () => ({
+vi.mock("@/lib/auth", () => ({
   authOptions: {},
-}))
+}));
 
 // Mock the prisma client
-vi.mock('@/lib/db', () => ({
+vi.mock("@/lib/db", () => ({
   default: {
     user: {
       findFirstOrThrow: vi.fn(),
     },
   },
-}))
+}));
 
 // Mock Sentry
-vi.mock('@sentry/nextjs', () => ({
+vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
-}))
+}));
 
 // Mock the withMethods middleware
-vi.mock('@/lib/api-middlewares/with-methods', () => ({
+vi.mock("@/lib/api-middlewares/with-methods", () => ({
   withMethods: (_methods: string[], handler: NextApiHandler) => handler,
-}))
+}));
 
 // Mock the withAuthentication middleware
-vi.mock('@/lib/api-middlewares/with-authentication', () => ({
+vi.mock("@/lib/api-middlewares/with-authentication", () => ({
   withAuthentication: (handler: NextApiHandler) => handler,
-}))
+}));
 
 // Mock the getServerSession function
-vi.mock('@/lib/api/get-server-session', () => ({
+vi.mock("@/lib/api/get-server-session", () => ({
   getServerSession: vi.fn(),
-}))
+}));
 
 // Mock the subscription utilities
-vi.mock('@/utils/subscription', () => ({
+vi.mock("@/utils/subscription", () => ({
   canAccessFeature: vi.fn(),
   getSubscription: vi.fn(),
-}))
+}));
 
 // Import the mocked modules
 
-describe('install/[token] API', () => {
+describe("install/[token] API", () => {
   beforeEach(() => {
-    vi.resetAllMocks()
+    vi.resetAllMocks();
 
     // Setup environment variables
-    vi.stubEnv('TWITCH_CLIENT_ID', 'mock-client-id')
-    vi.stubEnv('TWITCH_CLIENT_SECRET', 'mock-client-secret')
-    vi.stubEnv('NEXT_PUBLIC_GSI_WEBSOCKET_URL', 'wss://test-websocket-url.com')
-  })
+    vi.stubEnv("TWITCH_CLIENT_ID", "mock-client-id");
+    vi.stubEnv("TWITCH_CLIENT_SECRET", "mock-client-secret");
+    vi.stubEnv("NEXT_PUBLIC_GSI_WEBSOCKET_URL", "wss://test-websocket-url.com");
+  });
 
   afterEach(() => {
-    vi.clearAllMocks()
+    vi.clearAllMocks();
 
     // Clean up environment variables
-    vi.unstubAllEnvs()
-  })
+    vi.unstubAllEnvs();
+  });
 
-  it('returns 403 when user is impersonating', async () => {
+  it("returns 403 when user is impersonating", async () => {
     const { req, res } = createMocks({
-      method: 'GET',
+      method: "GET",
       query: {
-        token: 'test-token',
+        token: "test-token",
       },
-    })
+    });
 
     vi.mocked(getServerSession).mockResolvedValue({
       user: {
-        id: 'user-id',
+        id: "user-id",
         isImpersonating: true,
       },
-    } as Session)
+    } as Session);
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(403)
-    expect(res._getJSONData()).toStrictEqual({ message: 'Forbidden' })
-  })
+    expect(res.statusCode).toBe(403);
+    expect(res._getJSONData()).toStrictEqual({ message: "Forbidden" });
+  });
 
-  it('returns 403 when no userId is provided', async () => {
+  it("returns 403 when no userId is provided", async () => {
     const { req, res } = createMocks({
-      method: 'GET',
+      method: "GET",
       query: {
-        token: '',
+        token: "",
       },
-    })
+    });
 
     vi.mocked(getServerSession).mockResolvedValue({
       user: {
-        id: '',
+        id: "",
       },
-    } as Session)
+    } as Session);
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(403)
-    expect(res._getJSONData()).toStrictEqual({ message: 'Unauthorized' })
-  })
+    expect(res.statusCode).toBe(403);
+    expect(res._getJSONData()).toStrictEqual({ message: "Unauthorized" });
+  });
 
-  it('returns 403 when user does not have access to the feature', async () => {
+  it("returns 403 when user does not have access to the feature", async () => {
     const { req, res } = createMocks({
-      method: 'GET',
+      method: "GET",
       query: {
-        token: 'test-token',
+        token: "test-token",
       },
-    })
+    });
 
     vi.mocked(getServerSession).mockResolvedValue({
       user: {
-        id: 'user-id',
+        id: "user-id",
         isImpersonating: false,
       },
-    } as Session)
+    } as Session);
     // Use proper type for subscription
     vi.mocked(getSubscription).mockResolvedValue({
       cancelAtPeriodEnd: false,
       createdAt: new Date(),
       currentPeriodEnd: null,
       giftDetails: null,
-      id: 'subscription-id',
+      id: "subscription-id",
       isGift: false,
       metadata: {},
-      status: 'ACTIVE' as const,
+      status: "ACTIVE" as const,
       stripeCustomerId: null,
       stripePriceId: null,
       stripeSubscriptionId: null,
-      tier: 'FREE' as const,
-      transactionType: 'RECURRING' as const,
-    })
+      tier: "FREE" as const,
+      transactionType: "RECURRING" as const,
+    });
 
     vi.mocked(canAccessFeature).mockReturnValue({
       hasAccess: false,
-      requiredTier: 'PRO',
-    })
+      requiredTier: "PRO",
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(getSubscription).toHaveBeenCalledWith('test-token')
-    expect(canAccessFeature).toHaveBeenCalledWith('autoInstaller', expect.anything())
-    expect(res.statusCode).toBe(403)
+    expect(getSubscription).toHaveBeenCalledWith("test-token");
+    expect(canAccessFeature).toHaveBeenCalledWith("autoInstaller", expect.anything());
+    expect(res.statusCode).toBe(403);
     expect(res._getJSONData()).toStrictEqual({
-      error: 'This feature requires a subscription',
-      requiredTier: 'PRO',
-    })
-  })
+      error: "This feature requires a subscription",
+      requiredTier: "PRO",
+    });
+  });
 
-  it('returns 500 when database query fails', async () => {
+  it("returns 500 when database query fails", async () => {
     const { req, res } = createMocks({
-      method: 'GET',
+      method: "GET",
       query: {
-        token: 'test-token',
+        token: "test-token",
       },
-    })
+    });
 
     vi.mocked(getServerSession).mockResolvedValue({
       user: {
-        id: 'user-id',
+        id: "user-id",
         isImpersonating: false,
       },
-    } as Session)
+    } as Session);
     // Use proper type for subscription
     vi.mocked(getSubscription).mockResolvedValue({
       cancelAtPeriodEnd: false,
       createdAt: new Date(),
       currentPeriodEnd: null,
       giftDetails: null,
-      id: 'subscription-id',
+      id: "subscription-id",
       isGift: false,
       metadata: {},
-      status: 'ACTIVE' as const,
+      status: "ACTIVE" as const,
       stripeCustomerId: null,
       stripePriceId: null,
       stripeSubscriptionId: null,
-      tier: 'PRO' as const,
-      transactionType: 'RECURRING' as const,
-    })
+      tier: "PRO" as const,
+      transactionType: "RECURRING" as const,
+    });
 
     vi.mocked(canAccessFeature).mockReturnValue({
       hasAccess: true,
-      requiredTier: 'FREE',
-    })
+      requiredTier: "FREE",
+    });
 
-    const mockError = new Error('Database error')
-    vi.mocked(prisma.user.findFirstOrThrow).mockRejectedValue(mockError)
+    const mockError = new Error("Database error");
+    vi.mocked(prisma.user.findFirstOrThrow).mockRejectedValue(mockError);
 
-    await handler(req, res)
+    await handler(req, res);
 
     expect(prisma.user.findFirstOrThrow).toHaveBeenCalledWith({
       select: {
         name: true,
       },
       where: {
-        id: 'test-token',
+        id: "test-token",
       },
-    })
-    expect(captureException).toHaveBeenCalledWith(mockError)
-    expect(res.statusCode).toBe(500)
+    });
+    expect(captureException).toHaveBeenCalledWith(mockError);
+    expect(res.statusCode).toBe(500);
     expect(res._getJSONData()).toStrictEqual({
-      error: 'Database error',
-      message: 'Failed to get info',
-    })
-  })
+      error: "Database error",
+      message: "Failed to get info",
+    });
+  });
 
-  it('returns the config file when user has access', async () => {
+  it("returns the config file when user has access", async () => {
     const { req, res } = createMocks({
-      method: 'GET',
+      method: "GET",
       query: {
-        token: 'test-token',
+        token: "test-token",
       },
-    })
+    });
 
     vi.mocked(getServerSession).mockResolvedValue({
       user: {
-        id: 'user-id',
+        id: "user-id",
         isImpersonating: false,
       },
-    } as Session)
+    } as Session);
 
     // Use proper type for subscription
     vi.mocked(getSubscription).mockResolvedValue({
@@ -235,21 +235,21 @@ describe('install/[token] API', () => {
       createdAt: new Date(),
       currentPeriodEnd: null,
       giftDetails: null,
-      id: 'subscription-id',
+      id: "subscription-id",
       isGift: false,
       metadata: {},
-      status: 'ACTIVE' as SubscriptionStatus,
+      status: "ACTIVE" as SubscriptionStatus,
       stripeCustomerId: null,
       stripePriceId: null,
       stripeSubscriptionId: null,
-      tier: 'PRO' as SubscriptionTier,
-      transactionType: 'RECURRING' as const,
-    })
+      tier: "PRO" as SubscriptionTier,
+      transactionType: "RECURRING" as const,
+    });
 
     vi.mocked(canAccessFeature).mockReturnValue({
       hasAccess: true,
-      requiredTier: 'FREE',
-    })
+      requiredTier: "FREE",
+    });
 
     // Mock the user with required properties
     vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue({
@@ -264,14 +264,14 @@ describe('install/[token] API', () => {
       emailVerified: null,
       followers: null,
       hideFromLeaderboard: false,
-      id: 'test-token',
+      id: "test-token",
       image: null,
       kick: null,
       kickUsername: null,
       lastStreamCheck: null,
-      locale: 'en',
+      locale: "en",
       mmr: 0,
-      name: 'testuser',
+      name: "testuser",
       proExpiration: null,
       steam32Id: null,
       streamCategory: null,
@@ -285,24 +285,24 @@ describe('install/[token] API', () => {
       updatedAt: new Date(),
       youtube: null,
       youtubeChannelId: null,
-    })
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
     expect(prisma.user.findFirstOrThrow).toHaveBeenCalledWith({
       select: {
         name: true,
       },
       where: {
-        id: 'test-token',
+        id: "test-token",
       },
-    })
+    });
 
-    expect(res._getHeaders()['content-disposition']).toBe(
+    expect(res._getHeaders()["content-disposition"]).toBe(
       'attachment; filename="gamestate_integration_dotabod-testuser.cfg"',
-    )
-    expect(res._getHeaders()['content-type']).toBe('text/plain')
-    expect(res.statusCode).toBe(200)
+    );
+    expect(res._getHeaders()["content-type"]).toBe("text/plain");
+    expect(res.statusCode).toBe(200);
 
     const expectedFileContent = `"Dotabod Configuration"
 {
@@ -328,24 +328,24 @@ describe('install/[token] API', () => {
     "token" "test-token"
   }
 }
-`
-    expect(res._getData()).toBe(expectedFileContent)
-  })
+`;
+    expect(res._getData()).toBe(expectedFileContent);
+  });
 
-  it('uses token from query params over session user id', async () => {
+  it("uses token from query params over session user id", async () => {
     const { req, res } = createMocks({
-      method: 'GET',
+      method: "GET",
       query: {
-        token: 'query-token',
+        token: "query-token",
       },
-    })
+    });
 
     vi.mocked(getServerSession).mockResolvedValue({
       user: {
-        id: 'session-user-id',
+        id: "session-user-id",
         isImpersonating: false,
       },
-    } as Session)
+    } as Session);
 
     // Use proper type for subscription
     vi.mocked(getSubscription).mockResolvedValue({
@@ -353,21 +353,21 @@ describe('install/[token] API', () => {
       createdAt: new Date(),
       currentPeriodEnd: null,
       giftDetails: null,
-      id: 'subscription-id',
+      id: "subscription-id",
       isGift: false,
       metadata: {},
-      status: 'ACTIVE' as SubscriptionStatus,
+      status: "ACTIVE" as SubscriptionStatus,
       stripeCustomerId: null,
       stripePriceId: null,
       stripeSubscriptionId: null,
-      tier: 'PRO' as SubscriptionTier,
-      transactionType: 'RECURRING' as const,
-    })
+      tier: "PRO" as SubscriptionTier,
+      transactionType: "RECURRING" as const,
+    });
 
     vi.mocked(canAccessFeature).mockReturnValue({
       hasAccess: true,
-      requiredTier: 'FREE',
-    })
+      requiredTier: "FREE",
+    });
 
     // Mock the user with required properties
     vi.mocked(prisma.user.findFirstOrThrow).mockResolvedValue({
@@ -382,14 +382,14 @@ describe('install/[token] API', () => {
       emailVerified: null,
       followers: null,
       hideFromLeaderboard: false,
-      id: 'query-token',
+      id: "query-token",
       image: null,
       kick: null,
       kickUsername: null,
       lastStreamCheck: null,
-      locale: 'en',
+      locale: "en",
       mmr: 0,
-      name: 'queryuser',
+      name: "queryuser",
       proExpiration: null,
       steam32Id: null,
       streamCategory: null,
@@ -403,18 +403,18 @@ describe('install/[token] API', () => {
       updatedAt: new Date(),
       youtube: null,
       youtubeChannelId: null,
-    })
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(getSubscription).toHaveBeenCalledWith('query-token')
+    expect(getSubscription).toHaveBeenCalledWith("query-token");
     expect(prisma.user.findFirstOrThrow).toHaveBeenCalledWith({
       select: {
         name: true,
       },
       where: {
-        id: 'query-token',
+        id: "query-token",
       },
-    })
-  })
-})
+    });
+  });
+});

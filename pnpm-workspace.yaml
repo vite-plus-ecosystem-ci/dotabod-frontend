@@ -1,18 +1,23 @@
 nodeLinker: hoisted
 
 publicHoistPattern:
-  - '*prisma*'
+  - "*prisma*"
 
 # typography's peer expression includes the non-semver token `insiders`;
 # allow the installed stable Tailwind release until upstream corrects it.
 peerDependencyRules:
   allowedVersions:
-    tailwindcss: '4.3.3'
+    tailwindcss: "4.3.3"
+    vite: "*"
+    vitest: "*"
+  allowAny:
+    - vite
+    - vitest
 
 allowBuilds:
-  '@prisma/client': true
-  '@prisma/engines': true
-  '@sentry/cli': true
+  "@prisma/client": true
+  "@prisma/engines": true
+  "@sentry/cli": true
   esbuild: true
   lefthook: true
   prisma: true
@@ -21,18 +26,26 @@ allowBuilds:
 minimumReleaseAgeExclude:
   # ecosystem-ci smoke test: preview builds and freshly pinned toolchain packages
   - vite-plus
-  - '@voidzero-dev/*'
-  - '@oxc-project/*'
+  - "@voidzero-dev/*"
+  - "@oxc-project/*"
   - oxlint
-  - '@oxlint/*'
+  - "@oxlint/*"
   - oxfmt
-  - '@oxfmt/*'
+  - "@oxfmt/*"
   - oxlint-tsgolint
-  - '@oxlint-tsgolint/*'
+  - "@oxlint-tsgolint/*"
   - vitest
-  - '@vitest/*'
+  - "@vitest/*"
   - tinybench
   - yuku-core
   - yuku-parser
-  - '@yuku-core/*'
-  - '@yuku-toolchain/*'
+  - "@yuku-core/*"
+  - "@yuku-toolchain/*"
+catalog:
+  vite: npm:@voidzero-dev/vite-plus-core@0.0.0-commit.6bc2d240a024170c08fbc831f0c201c162afd22e
+  vitest: 5.0.5
+  vite-plus: 0.0.0-commit.6bc2d240a024170c08fbc831f0c201c162afd22e
+  "@vitest/coverage-v8": 5.0.5
+overrides:
+  vite@*: "catalog:"
+  vitest@*: "catalog:"
