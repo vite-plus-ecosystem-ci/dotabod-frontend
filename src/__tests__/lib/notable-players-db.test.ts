@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vite-plus/test'
 
 import { createRuntimeNotablePlayersDatabase } from '@/lib/notable-players-db'
 import type { NotablePlayersDatabase } from '@/lib/notable-players-db'

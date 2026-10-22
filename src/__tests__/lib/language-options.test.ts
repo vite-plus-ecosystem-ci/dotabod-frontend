@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 
 import { languageOptions } from '@/lib/language-options'
 import { localePatchSchema } from '@/lib/validations/setting'

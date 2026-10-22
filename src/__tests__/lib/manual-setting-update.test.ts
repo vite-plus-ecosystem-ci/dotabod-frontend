@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 
 import { manualSettingUpdate } from '@/lib/manual-setting-update'
 

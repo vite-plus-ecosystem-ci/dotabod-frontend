@@ -1,6 +1,6 @@
 import { formatWithOptions } from 'node:util'
 
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
 
 import {
   getDuplicateOpenNodeWebhookAt,

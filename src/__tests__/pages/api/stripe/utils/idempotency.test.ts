@@ -1,6 +1,6 @@
 import type { Prisma } from '@prisma/client'
 import { PrismaClient } from '@prisma/client'
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 import type { BillingFacts } from '@/lib/stripe/utils/billing-facts'
 import { processEventIdempotently } from '@/lib/stripe/utils/idempotency'

@@ -1,5 +1,5 @@
 import { SubscriptionStatus, TransactionType } from '@prisma/client'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 import type { RefundableSubscription, RefundedCharge } from '../refund-service'
 import { applyChargeRefund } from '../refund-service'

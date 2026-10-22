@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 import type { Subscription } from '@prisma/client'
 import { Stripe } from 'stripe'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vite-plus/test'
 
 import { handleInvoiceEvent } from '@/lib/stripe/handlers/invoice-events'
 

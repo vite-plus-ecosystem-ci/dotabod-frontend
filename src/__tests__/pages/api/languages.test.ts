@@ -1,6 +1,6 @@
 import { captureException } from '@sentry/nextjs'
 import { createMocks } from 'node-mocks-http'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 import handler from '@/pages/api/languages'
 

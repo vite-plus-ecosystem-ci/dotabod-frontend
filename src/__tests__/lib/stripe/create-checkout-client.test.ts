@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
 
 import { createCheckoutSession } from '@/lib/stripe'
 import { LIVE_SUBSCRIPTION_CODE } from '@/lib/stripe/live-subscription'

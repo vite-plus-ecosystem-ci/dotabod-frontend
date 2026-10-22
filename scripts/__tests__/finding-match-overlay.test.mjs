@@ -7,7 +7,7 @@ import path from 'node:path'
 import { promisify } from 'node:util'
 
 import sharp from 'sharp'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 
 import {
   classifyOverlayState,

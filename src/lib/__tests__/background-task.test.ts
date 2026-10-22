@@ -1,5 +1,5 @@
 import { getRequestExecutionContext, runWithExecutionContext } from 'vinext/shims/request-context'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vite-plus/test'
 
 import { runBackgroundTask } from '../background-task'
 

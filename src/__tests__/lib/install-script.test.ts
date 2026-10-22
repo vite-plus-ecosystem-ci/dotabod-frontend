@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 
 import { createInstallResponse } from '@/lib/install-script'
 import installScript from '@/lib/private/install.ps1?raw'

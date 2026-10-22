@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { setTimeout } from 'node:timers/promises'
 
-import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 import prisma from '@/lib/db'
 import type { BillingFacts } from '@/lib/stripe/utils/billing-facts'

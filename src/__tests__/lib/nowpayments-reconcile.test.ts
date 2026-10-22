@@ -1,5 +1,5 @@
 import type { NowPaymentsInvoice } from '@prisma/client'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vite-plus/test'
 
 import type { NowPaymentsPaymentStatus } from '@/lib/nowpayments'
 import { reconcileNowPaymentsInvoices } from '@/lib/nowpayments-reconcile'

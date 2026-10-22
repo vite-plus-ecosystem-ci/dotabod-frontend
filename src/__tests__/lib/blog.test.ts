@@ -1,5 +1,5 @@
 import matter from 'gray-matter'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 
 import { getAllPosts, getLatestPost, getPostSource } from '@/lib/blog'
 

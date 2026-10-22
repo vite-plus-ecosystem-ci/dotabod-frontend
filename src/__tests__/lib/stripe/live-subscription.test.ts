@@ -1,5 +1,5 @@
 import { SubscriptionStatus } from '@prisma/client'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 
 import { isLiveStripeSubscription } from '@/lib/stripe/live-subscription'
 
