@@ -46967,26 +46967,6 @@
         "severity": "error"
       }
     },
-    "63c715ac4bd021edbf236f761be00f77bf5da8e5024be045fd3b1054b587157e": {
-      "count": 1,
-      "summary": {
-        "code": "typescript(consistent-return)",
-        "file": "src/lib/hooks/use-socket.tsx",
-        "labels": [
-          {
-            "context": {
-              "current": "return () => {",
-              "next": "clearInterval(connectionMonitor)",
-              "previous": "// Clean up"
-            },
-            "span": "return () => {\n      clearInterval(connectionMonitor)\n      clearInterval(diagnosticHeartbeat)\n      if (blockTimeout !== null) {\n        clearTimeout(blockTimeout)\n      }\n      activeSocket.io.off('ping', handlePing)\n      activeSocket.io.off('open', handleTransportOpen)\n      activeSocket.io.off('close', handshakeGuard.closed)\n      handshakeGuard.dispose()\n\n      for (const eventName of socketEventNames) {\n        activeSocket.off(eventName)\n      }\n    }",
-            "text": ""
-          }
-        ],
-        "message": "Function expected no return value.",
-        "severity": "error"
-      }
-    },
     "63c866f5addf125ae83cd9600351f38b59b5c972a24ed138e8a5f340087ac90f": {
       "count": 1,
       "summary": {
@@ -97452,6 +97432,26 @@
         "severity": "error"
       }
     },
+    "ce1701bdbf2239e1c06a0ef853bfdccedfc3a8f5265abe3a09ac9aeae1100c05": {
+      "count": 1,
+      "summary": {
+        "code": "typescript(consistent-return)",
+        "file": "src/lib/hooks/use-socket.tsx",
+        "labels": [
+          {
+            "context": {
+              "current": "return () => {",
+              "next": "clearInterval(connectionMonitor)",
+              "previous": "// Clean up"
+            },
+            "span": "return () => {\n      clearInterval(connectionMonitor)\n      clearInterval(diagnosticHeartbeat)\n      clearLinkLossTimeout()\n      clearResyncTimeout()\n      if (blockTimeout !== null) {\n        clearTimeout(blockTimeout)\n      }\n      activeSocket.io.off('ping', handlePing)\n      activeSocket.io.off('open', handleTransportOpen)\n      activeSocket.io.off('close', handshakeGuard.closed)\n      handshakeGuard.dispose()\n\n      for (const eventName of socketEventNames) {\n        activeSocket.off(eventName)\n      }\n    }",
+            "text": ""
+          }
+        ],
+        "message": "Function expected no return value.",
+        "severity": "error"
+      }
+    },
     "ce341ebe1daf6d5e2fac5799331660c7bd5033dddcb576e95ea7706a05081a44": {
       "count": 1,
       "summary": {
@@ -121963,7 +121963,7 @@
     }
   },
   "policy": {
-    "oxlintVersion": "Version: 1.89.0",
+    "oxlintVersion": "Version: 1.90.0",
     "targets": [
       {
         "config": "oxlint.config.ts",
@@ -122529,8 +122529,12 @@
         "name": "app",
         "resolvedConfigSha256": "c0c208cf8ff15b7a20a4ff6c86712ca2289f5ddd5cc522b89a67ca1704f34fa1",
         "scope": {
-          "ignorePatterns": ["supabase/functions/**"],
-          "paths": ["."]
+          "ignorePatterns": [
+            "supabase/functions/**"
+          ],
+          "paths": [
+            "."
+          ]
         }
       },
       {
@@ -122553,7 +122557,9 @@
         "resolvedConfigSha256": "6c6c97b8453def202543b9830ada155f95f1a1375685319dec3501f5c65e59a1",
         "scope": {
           "ignorePatterns": [],
-          "paths": ["supabase/functions"]
+          "paths": [
+            "supabase/functions"
+          ]
         }
       }
     ],
