@@ -1,53 +1,53 @@
-import path from 'node:path'
+import path from "node:path";
 
-import react from '@vitejs/plugin-react'
-import { loadEnv } from 'vite'
-import { defineConfig } from 'vitest/config'
+import react from "@vitejs/plugin-react";
+import { loadEnv } from "vite-plus";
+import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '.prisma-mongo/client': path.resolve(
+      ".prisma-mongo/client": path.resolve(
         import.meta.dirname,
-        './node_modules/.prisma-mongo/client',
+        "./node_modules/.prisma-mongo/client",
       ),
-      '@': path.resolve(import.meta.dirname, './src'),
+      "@": path.resolve(import.meta.dirname, "./src"),
     },
   },
   ssr: {
     resolve: {
       // DOM tests should load browser exports instead of Sentry's server-only
       // instrumentation graph, which expects a real Node file URL at import time.
-      conditions: ['browser', 'import', 'default'],
+      conditions: ["browser", "import", "default"],
     },
   },
   test: {
-    environment: 'happy-dom',
+    environment: "happy-dom",
     globals: true,
-    setupFiles: ['./vitest.setup.ts'],
+    setupFiles: ["./vitest.setup.ts"],
     testTimeout: 15_000,
     // Automatically restore mocks between tests
     mockReset: true,
     // Automatically restore stubbed environment variables between tests
     unstubEnvs: true,
     // Load environment variables from .env files
-    env: loadEnv('', process.cwd(), ''),
-    exclude: ['.next/', 'node_modules/', '.api/', 'vitest.setup.ts', '**/*.d.ts', '**/*.config.*'],
+    env: loadEnv("", process.cwd(), ""),
+    exclude: [".next/", "node_modules/", ".api/", "vitest.setup.ts", "**/*.d.ts", "**/*.config.*"],
     coverage: {
       exclude: [
-        '.next/',
-        'node_modules/',
-        '.api/',
-        'vitest.setup.ts',
-        '**/*.d.ts',
-        '**/*.config.*',
-        '**/dist/**',
-        '**/__tests__/**',
+        ".next/",
+        "node_modules/",
+        ".api/",
+        "vitest.setup.ts",
+        "**/*.d.ts",
+        "**/*.config.*",
+        "**/dist/**",
+        "**/__tests__/**",
       ],
-      include: ['src/components/Overlay/GiftAlert/gift-subscription-alert.tsx'],
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      include: ["src/components/Overlay/GiftAlert/gift-subscription-alert.tsx"],
+      provider: "v8",
+      reporter: ["text", "json", "html"],
     },
   },
-})
+});

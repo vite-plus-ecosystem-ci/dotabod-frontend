@@ -1,31 +1,31 @@
 // @ts-nocheck
 
-import type { GiftSubscription, SubscriptionStatus, SubscriptionTier } from '@prisma/client'
-import { createMocks } from 'node-mocks-http'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { GiftSubscription, SubscriptionStatus, SubscriptionTier } from "@prisma/client";
+import { createMocks } from "node-mocks-http";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { getServerSession } from '@/lib/api/get-server-session'
-import prisma from '@/lib/db'
-import handler from '@/pages/api/test-gift-notification'
+import { getServerSession } from "@/lib/api/get-server-session";
+import prisma from "@/lib/db";
+import handler from "@/pages/api/test-gift-notification";
 
 // Mock dependencies
-vi.mock('@/lib/api-middlewares/with-authentication', () => ({
+vi.mock("@/lib/api-middlewares/with-authentication", () => ({
   withAuthentication: (fn) => fn,
-}))
+}));
 
-vi.mock('@/lib/api-middlewares/with-methods', () => ({
+vi.mock("@/lib/api-middlewares/with-methods", () => ({
   withMethods: (_methods, fn) => fn,
-}))
+}));
 
-vi.mock('@/lib/api/get-server-session', () => ({
+vi.mock("@/lib/api/get-server-session", () => ({
   getServerSession: vi.fn(),
-}))
+}));
 
-vi.mock('@/lib/auth', () => ({
+vi.mock("@/lib/auth", () => ({
   authOptions: {},
-}))
+}));
 
-vi.mock('@/lib/db', () => ({
+vi.mock("@/lib/db", () => ({
   default: {
     giftSubscription: {
       create: vi.fn(),
@@ -39,262 +39,262 @@ vi.mock('@/lib/db', () => ({
       findMany: vi.fn(),
     },
   },
-}))
+}));
 
 // Import the mocked dependencies
 
-describe('test-gift-notification API', () => {
+describe("test-gift-notification API", () => {
   beforeEach(() => {
-    vi.resetAllMocks()
+    vi.resetAllMocks();
 
     // Mock process.env
-    vi.stubEnv('NODE_ENV', 'development')
+    vi.stubEnv("NODE_ENV", "development");
 
     // Setup default mock returns
-    vi.mocked(prisma.subscription.findFirst).mockResolvedValue(null)
-    vi.mocked(prisma.subscription.findMany).mockResolvedValue([])
+    vi.mocked(prisma.subscription.findFirst).mockResolvedValue(null);
+    vi.mocked(prisma.subscription.findMany).mockResolvedValue([]);
 
-    const mockDate = new Date()
+    const mockDate = new Date();
     vi.mocked(prisma.subscription.create).mockResolvedValue({
       cancelAtPeriodEnd: false,
       createdAt: mockDate,
       currentPeriodEnd: mockDate,
-      id: 'sub-123',
+      id: "sub-123",
       isGift: true,
       metadata: null,
-      status: 'ACTIVE',
+      status: "ACTIVE",
       stripeCustomerId: null,
       stripePriceId: null,
       stripeSubscriptionId: null,
-      tier: 'PRO',
-      transactionType: 'RECURRING',
+      tier: "PRO",
+      transactionType: "RECURRING",
       updatedAt: mockDate,
-      userId: 'user-123',
-    })
+      userId: "user-123",
+    });
 
     vi.mocked(prisma.giftSubscription.create).mockResolvedValue({
       createdAt: mockDate,
-      giftMessage: 'This is a test gift message. Enjoy your subscription!',
+      giftMessage: "This is a test gift message. Enjoy your subscription!",
       giftQuantity: 1,
-      giftType: 'monthly',
+      giftType: "monthly",
       gifterId: null,
-      id: 'gift-123',
-      senderName: 'Test Sender',
-      subscriptionId: 'sub-123',
+      id: "gift-123",
+      senderName: "Test Sender",
+      subscriptionId: "sub-123",
       updatedAt: mockDate,
-    })
+    });
 
     vi.mocked(prisma.notification.create).mockResolvedValue({
       createdAt: mockDate,
-      giftSubscriptionId: 'gift-123',
-      id: 'notification-123',
+      giftSubscriptionId: "gift-123",
+      id: "notification-123",
       isRead: false,
-      type: 'GIFT_SUBSCRIPTION',
+      type: "GIFT_SUBSCRIPTION",
       updatedAt: mockDate,
-      userId: 'user-123',
-    })
-  })
+      userId: "user-123",
+    });
+  });
 
-  it('returns 401 in production environment', async () => {
-    vi.stubEnv('NODE_ENV', 'production')
+  it("returns 401 in production environment", async () => {
+    vi.stubEnv("NODE_ENV", "production");
 
     const { req, res } = createMocks({
-      method: 'POST',
-    })
+      method: "POST",
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(401)
+    expect(res.statusCode).toBe(401);
     expect(res._getJSONData()).toStrictEqual({
-      message: 'Unauthorized',
-    })
-  })
+      message: "Unauthorized",
+    });
+  });
 
-  it('returns 401 when not authenticated', async () => {
-    vi.mocked(getServerSession).mockResolvedValue(null)
+  it("returns 401 when not authenticated", async () => {
+    vi.mocked(getServerSession).mockResolvedValue(null);
 
     const { req, res } = createMocks({
-      method: 'POST',
-    })
+      method: "POST",
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(401)
-    expect(res._getJSONData()).toStrictEqual({ message: 'Unauthorized' })
-  })
+    expect(res.statusCode).toBe(401);
+    expect(res._getJSONData()).toStrictEqual({ message: "Unauthorized" });
+  });
 
-  it('returns 401 when user is not an admin', async () => {
+  it("returns 401 when user is not an admin", async () => {
     vi.mocked(getServerSession).mockResolvedValue({
-      expires: '',
+      expires: "",
       user: {
-        email: 'test@example.com',
-        id: 'user-123',
-        image: 'https://example.com/avatar.png',
+        email: "test@example.com",
+        id: "user-123",
+        image: "https://example.com/avatar.png",
         isImpersonating: false,
-        locale: 'en',
-        name: 'Test User',
-        role: 'user',
-        scope: 'user',
-        twitchId: 'twitch-123',
+        locale: "en",
+        name: "Test User",
+        role: "user",
+        scope: "user",
+        twitchId: "twitch-123",
       },
-    })
+    });
 
     const { req, res } = createMocks({
-      method: 'POST',
-    })
+      method: "POST",
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(401)
-    expect(res._getJSONData()).toStrictEqual({ error: 'Unauthorized' })
-  })
+    expect(res.statusCode).toBe(401);
+    expect(res._getJSONData()).toStrictEqual({ error: "Unauthorized" });
+  });
 
-  it('returns 400 for invalid gift type', async () => {
+  it("returns 400 for invalid gift type", async () => {
     vi.mocked(getServerSession).mockResolvedValue({
-      expires: '',
+      expires: "",
       user: {
-        email: 'test@example.com',
-        id: 'user-123',
-        image: 'https://example.com/avatar.png',
+        email: "test@example.com",
+        id: "user-123",
+        image: "https://example.com/avatar.png",
         isImpersonating: false,
-        locale: 'en',
-        name: 'Test User',
-        role: 'admin',
-        scope: 'user',
-        twitchId: 'twitch-123',
+        locale: "en",
+        name: "Test User",
+        role: "admin",
+        scope: "user",
+        twitchId: "twitch-123",
       },
-    })
+    });
 
     const { req, res } = createMocks({
-      method: 'POST',
+      method: "POST",
       query: {
-        giftType: 'invalid-type',
+        giftType: "invalid-type",
       },
-    })
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(400)
+    expect(res.statusCode).toBe(400);
     expect(res._getJSONData()).toStrictEqual({
-      message: 'Invalid gift type. Must be monthly, annual, or lifetime',
-    })
-  })
+      message: "Invalid gift type. Must be monthly, annual, or lifetime",
+    });
+  });
 
-  it('returns 400 for invalid gift quantity', async () => {
+  it("returns 400 for invalid gift quantity", async () => {
     vi.mocked(getServerSession).mockResolvedValue({
-      expires: '',
+      expires: "",
       user: {
-        email: 'test@example.com',
-        id: 'user-123',
-        image: 'https://example.com/avatar.png',
+        email: "test@example.com",
+        id: "user-123",
+        image: "https://example.com/avatar.png",
         isImpersonating: false,
-        locale: 'en',
-        name: 'Test User',
-        role: 'admin',
-        scope: 'user',
-        twitchId: 'twitch-123',
+        locale: "en",
+        name: "Test User",
+        role: "admin",
+        scope: "user",
+        twitchId: "twitch-123",
       },
-    })
+    });
 
     const { req, res } = createMocks({
       body: {
-        giftQuantity: '-1',
+        giftQuantity: "-1",
       },
-      method: 'POST',
+      method: "POST",
       query: {
-        giftType: 'monthly',
+        giftType: "monthly",
       },
-    })
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(400)
+    expect(res.statusCode).toBe(400);
     expect(res._getJSONData()).toStrictEqual({
-      message: 'Gift quantity must be a positive number',
-    })
-  })
+      message: "Gift quantity must be a positive number",
+    });
+  });
 
-  it('successfully creates a monthly gift notification', async () => {
+  it("successfully creates a monthly gift notification", async () => {
     vi.mocked(getServerSession).mockResolvedValue({
-      expires: '',
+      expires: "",
       user: {
-        email: 'test@example.com',
-        id: 'user-123',
-        image: 'https://example.com/avatar.png',
+        email: "test@example.com",
+        id: "user-123",
+        image: "https://example.com/avatar.png",
         isImpersonating: false,
-        locale: 'en',
-        name: 'Test User',
-        role: 'admin',
-        scope: 'user',
-        twitchId: 'twitch-123',
+        locale: "en",
+        name: "Test User",
+        role: "admin",
+        scope: "user",
+        twitchId: "twitch-123",
       },
-    })
+    });
 
-    const mockDate = new Date()
+    const mockDate = new Date();
     vi.mocked(prisma.giftSubscription.create).mockResolvedValue({
       createdAt: mockDate,
-      giftMessage: 'This is a test gift message. Enjoy your subscription!',
+      giftMessage: "This is a test gift message. Enjoy your subscription!",
       giftQuantity: 2,
-      giftType: 'monthly',
+      giftType: "monthly",
       gifterId: null,
-      id: 'gift-123',
-      senderName: 'Test Sender',
-      subscriptionId: 'sub-123',
+      id: "gift-123",
+      senderName: "Test Sender",
+      subscriptionId: "sub-123",
       updatedAt: mockDate,
-    })
+    });
 
     const { req, res } = createMocks({
       body: {
-        giftMessage: 'This is a test gift message. Enjoy your subscription!',
-        giftQuantity: '2',
+        giftMessage: "This is a test gift message. Enjoy your subscription!",
+        giftQuantity: "2",
       },
-      method: 'POST',
+      method: "POST",
       query: {
-        giftType: 'monthly',
+        giftType: "monthly",
       },
-    })
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(200)
-    const responseData = res._getJSONData()
-    expect(responseData.success).toBeTruthy()
-    expect(responseData.message).toBe('Test gift notification created')
-    expect(responseData.notification.id).toBe('notification-123')
-    expect(responseData.giftSubscription.giftType).toBe('monthly')
-    expect(responseData.giftSubscription.giftQuantity).toBe(2)
-    expect(responseData.totalGiftedMonths).toBe(0)
-    expect(responseData.hasLifetime).toBeFalsy()
-  })
+    expect(res.statusCode).toBe(200);
+    const responseData = res._getJSONData();
+    expect(responseData.success).toBeTruthy();
+    expect(responseData.message).toBe("Test gift notification created");
+    expect(responseData.notification.id).toBe("notification-123");
+    expect(responseData.giftSubscription.giftType).toBe("monthly");
+    expect(responseData.giftSubscription.giftQuantity).toBe(2);
+    expect(responseData.totalGiftedMonths).toBe(0);
+    expect(responseData.hasLifetime).toBeFalsy();
+  });
 
-  it('successfully creates a lifetime gift notification', async () => {
+  it("successfully creates a lifetime gift notification", async () => {
     vi.mocked(getServerSession).mockResolvedValue({
-      expires: '',
+      expires: "",
       user: {
-        email: 'test@example.com',
-        id: 'user-123',
-        image: 'https://example.com/avatar.png',
+        email: "test@example.com",
+        id: "user-123",
+        image: "https://example.com/avatar.png",
         isImpersonating: false,
-        locale: 'en',
-        name: 'Test User',
-        role: 'admin',
-        scope: 'user',
-        twitchId: 'twitch-123',
+        locale: "en",
+        name: "Test User",
+        role: "admin",
+        scope: "user",
+        twitchId: "twitch-123",
       },
-    })
+    });
 
-    const mockDate = new Date()
+    const mockDate = new Date();
     vi.mocked(prisma.giftSubscription.create).mockResolvedValue({
       createdAt: mockDate,
-      giftMessage: 'This is a test gift message. Enjoy your subscription!',
+      giftMessage: "This is a test gift message. Enjoy your subscription!",
       giftQuantity: 1,
-      giftType: 'lifetime',
+      giftType: "lifetime",
       gifterId: null,
-      id: 'gift-123',
-      senderName: 'Test Sender',
-      subscriptionId: 'sub-123',
+      id: "gift-123",
+      senderName: "Test Sender",
+      subscriptionId: "sub-123",
       updatedAt: mockDate,
-    })
+    });
     vi.mocked(prisma.subscription.findMany).mockResolvedValue([
       {
         cancelAtPeriodEnd: false,
@@ -302,148 +302,148 @@ describe('test-gift-notification API', () => {
         currentPeriodEnd: mockDate,
         giftDetails: {
           createdAt: mockDate,
-          giftMessage: 'This is a test gift message',
+          giftMessage: "This is a test gift message",
           giftQuantity: 1,
-          giftType: 'lifetime',
-          id: 'gift-details-123',
-          senderName: 'Test Sender',
-          subscriptionId: 'sub-1234',
+          giftType: "lifetime",
+          id: "gift-details-123",
+          senderName: "Test Sender",
+          subscriptionId: "sub-1234",
           updatedAt: mockDate,
         } as GiftSubscription,
-        id: 'sub-1234',
+        id: "sub-1234",
         isGift: true,
-        status: 'ACTIVE',
+        status: "ACTIVE",
         stripeCustomerId: null,
         stripePriceId: null,
         stripeSubscriptionId: null,
-        tier: 'PRO',
-        transactionType: 'LIFETIME',
+        tier: "PRO",
+        transactionType: "LIFETIME",
         updatedAt: mockDate,
-        userId: 'user-123',
+        userId: "user-123",
       },
-    ])
+    ]);
 
     const { req, res } = createMocks({
       body: {
-        giftMessage: 'This is a test gift message. Enjoy your subscription!',
+        giftMessage: "This is a test gift message. Enjoy your subscription!",
       },
-      method: 'POST',
+      method: "POST",
       query: {
-        giftType: 'lifetime',
+        giftType: "lifetime",
       },
-    })
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(200)
-    const responseData = res._getJSONData()
-    expect(responseData.success).toBeTruthy()
-    expect(responseData.message).toBe('Test gift notification created')
-    expect(responseData.notification.id).toBe('notification-123')
-    expect(responseData.giftSubscription.giftType).toBe('lifetime')
-    expect(responseData.giftSubscription.giftQuantity).toBe(1)
-    expect(responseData.totalGiftedMonths).toBe('lifetime')
-    expect(responseData.hasLifetime).toBeTruthy()
-  })
+    expect(res.statusCode).toBe(200);
+    const responseData = res._getJSONData();
+    expect(responseData.success).toBeTruthy();
+    expect(responseData.message).toBe("Test gift notification created");
+    expect(responseData.notification.id).toBe("notification-123");
+    expect(responseData.giftSubscription.giftType).toBe("lifetime");
+    expect(responseData.giftSubscription.giftQuantity).toBe(1);
+    expect(responseData.totalGiftedMonths).toBe("lifetime");
+    expect(responseData.hasLifetime).toBeTruthy();
+  });
 
-  it('handles existing lifetime subscription', async () => {
+  it("handles existing lifetime subscription", async () => {
     vi.mocked(getServerSession).mockResolvedValue({
-      expires: '',
+      expires: "",
       user: {
-        email: 'test@example.com',
-        id: 'user-123',
-        image: 'https://example.com/avatar.png',
+        email: "test@example.com",
+        id: "user-123",
+        image: "https://example.com/avatar.png",
         isImpersonating: false,
-        locale: 'en',
-        name: 'Test User',
-        role: 'admin',
-        scope: 'user',
-        twitchId: 'twitch-123',
+        locale: "en",
+        name: "Test User",
+        role: "admin",
+        scope: "user",
+        twitchId: "twitch-123",
       },
-    })
+    });
 
     // Mock console.warn
-    const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
-    const mockDate = new Date()
+    const mockDate = new Date();
     // Mock existing lifetime subscription
     vi.mocked(prisma.subscription.findFirst).mockResolvedValue({
       cancelAtPeriodEnd: false,
       createdAt: mockDate,
       currentPeriodEnd: mockDate,
-      id: 'existing-sub-123',
+      id: "existing-sub-123",
       isGift: true,
       metadata: null,
-      status: 'ACTIVE' as SubscriptionStatus,
+      status: "ACTIVE" as SubscriptionStatus,
       stripeCustomerId: null,
       stripePriceId: null,
       stripeSubscriptionId: null,
-      tier: 'PRO' as SubscriptionTier,
-      transactionType: 'LIFETIME',
+      tier: "PRO" as SubscriptionTier,
+      transactionType: "LIFETIME",
       updatedAt: mockDate,
-      userId: 'user-123',
-    })
+      userId: "user-123",
+    });
 
     vi.mocked(prisma.giftSubscription.create).mockResolvedValue({
       createdAt: mockDate,
-      giftMessage: 'This is a test gift message. Enjoy your subscription!',
+      giftMessage: "This is a test gift message. Enjoy your subscription!",
       giftQuantity: 1,
-      giftType: 'lifetime',
+      giftType: "lifetime",
       gifterId: null,
-      id: 'gift-123',
-      senderName: 'Test Sender',
-      subscriptionId: 'sub-123',
+      id: "gift-123",
+      senderName: "Test Sender",
+      subscriptionId: "sub-123",
       updatedAt: mockDate,
-    })
+    });
 
     const { req, res } = createMocks({
-      method: 'POST',
+      method: "POST",
       query: {
-        giftType: 'lifetime',
+        giftType: "lifetime",
       },
-    })
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(consoleWarnSpy).toHaveBeenCalledOnce()
-    expect(res.statusCode).toBe(200)
-    const responseData = res._getJSONData()
-    expect(responseData.success).toBeTruthy()
-  })
+    expect(consoleWarnSpy).toHaveBeenCalledOnce();
+    expect(res.statusCode).toBe(200);
+    const responseData = res._getJSONData();
+    expect(responseData.success).toBeTruthy();
+  });
 
-  it('handles server error', async () => {
+  it("handles server error", async () => {
     vi.mocked(getServerSession).mockResolvedValue({
-      expires: '',
+      expires: "",
       user: {
-        email: 'test@example.com',
-        id: 'user-123',
-        image: 'https://example.com/avatar.png',
+        email: "test@example.com",
+        id: "user-123",
+        image: "https://example.com/avatar.png",
         isImpersonating: false,
-        locale: 'en',
-        name: 'Test User',
-        role: 'admin',
-        scope: 'user',
-        twitchId: 'twitch-123',
+        locale: "en",
+        name: "Test User",
+        role: "admin",
+        scope: "user",
+        twitchId: "twitch-123",
       },
-    })
+    });
 
     // Mock console.error
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     // Force an error
-    vi.mocked(prisma.subscription.create).mockRejectedValue(new Error('Database error'))
+    vi.mocked(prisma.subscription.create).mockRejectedValue(new Error("Database error"));
 
     const { req, res } = createMocks({
-      method: 'POST',
+      method: "POST",
       query: {
-        giftType: 'monthly',
+        giftType: "monthly",
       },
-    })
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(consoleErrorSpy).toHaveBeenCalledOnce()
-    expect(res.statusCode).toBe(500)
-    expect(res._getJSONData().message).toBe('Internal server error')
-  })
-})
+    expect(consoleErrorSpy).toHaveBeenCalledOnce();
+    expect(res.statusCode).toBe(500);
+    expect(res._getJSONData().message).toBe("Internal server error");
+  });
+});
