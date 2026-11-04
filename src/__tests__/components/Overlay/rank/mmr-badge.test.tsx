@@ -1,17 +1,17 @@
-import { render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vite-plus/test";
 
-import { MMRBadge } from '@/components/Overlay/rank/mmr-badge'
+import { MMRBadge } from "@/components/Overlay/rank/mmr-badge";
 
-vi.mock('@/lib/hooks/use-transform-res', () => ({
+vi.mock("@/lib/hooks/use-transform-res", () => ({
   useTransformRes: () => (params: Record<string, number>) => params.w || params.h,
-}))
+}));
 
 describe(MMRBadge, () => {
-  it('does not substitute the uncalibrated medal when rank images are hidden', () => {
-    render(<MMRBadge image={undefined} leaderboard={189} rank={undefined} />)
+  it("does not substitute the uncalibrated medal when rank images are hidden", () => {
+    render(<MMRBadge image={undefined} leaderboard={189} rank={undefined} />);
 
-    expect(screen.queryByRole('img')).not.toBeInTheDocument()
-    expect(screen.getByText('#189')).toBeInTheDocument()
-  })
-})
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
+    expect(screen.getByText("#189")).toBeInTheDocument();
+  });
+});
