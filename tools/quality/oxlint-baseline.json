@@ -7506,26 +7506,6 @@
         "severity": "error"
       }
     },
-    "0f47237464f969a097810bb9e9725b5634848240078978db864ab418641820d5": {
-      "count": 1,
-      "summary": {
-        "code": "react(immutability)",
-        "file": "src/__tests__/lib/hooks/use-update-setting.test.tsx",
-        "labels": [
-          {
-            "context": {
-              "current": "refs.isSaving = result.isSaving",
-              "next": "savingHistory.push(result.isSaving)",
-              "previous": "refs.updateSetting = result.updateSetting"
-            },
-            "span": "refs",
-            "text": "value cannot be modified"
-          }
-        ],
-        "message": "This value cannot be modified",
-        "severity": "error"
-      }
-    },
     "0f6eed8e74b9f45d3fb87327255308d2da59735bc2a802d0d831cda3e0cfa19a": {
       "count": 1,
       "summary": {
@@ -21153,26 +21133,6 @@
         "severity": "error"
       }
     },
-    "2be0862fec3cd14487f70c88c325ec2259ab42164707bb2df6ff5603d3c93ef0": {
-      "count": 1,
-      "summary": {
-        "code": "react(immutability)",
-        "file": "src/__tests__/lib/hooks/use-update-setting.test.tsx",
-        "labels": [
-          {
-            "context": {
-              "current": "refs.update = useUpdateAccount().update",
-              "next": "return null",
-              "previous": "const TestComponent = () => {"
-            },
-            "span": "refs",
-            "text": "value cannot be modified"
-          }
-        ],
-        "message": "This value cannot be modified",
-        "severity": "error"
-      }
-    },
     "2beb339dfe1d2e214f0d7882b32e9c0b7de121caf7dda9b19456fe6ac293bea8": {
       "count": 2,
       "summary": {
@@ -28233,6 +28193,35 @@
           }
         ],
         "message": "Unexpected nullable string value in conditional.",
+        "severity": "error"
+      }
+    },
+    "3ae7560d0773b0b29ab8b1da721551dfd1e3471aa66b5f1ed02a4a2387c98227": {
+      "count": 1,
+      "summary": {
+        "code": "react(immutability)",
+        "file": "src/components/Overlay/lastfm/last-fm-card.tsx",
+        "labels": [
+          {
+            "context": {
+              "current": "animationCancelled = true",
+              "next": "controls.stop()",
+              "previous": "return () => {"
+            },
+            "span": "animationCancelled",
+            "text": "Cannot reassign `animationCancelled` after render completes"
+          },
+          {
+            "context": {
+              "current": "let animationCancelled = false",
+              "next": "",
+              "previous": "useEffect(() => {"
+            },
+            "span": "animationCancelled",
+            "text": "`animationCancelled` is declared here"
+          }
+        ],
+        "message": "Cannot reassign variable after render completes",
         "severity": "error"
       }
     },
@@ -53487,6 +53476,35 @@
         "severity": "error"
       }
     },
+    "718e3a2911fdf4a8a239c0ea74f8e31e59fd1da922ca7a663fb6376d5224a09f": {
+      "count": 1,
+      "summary": {
+        "code": "react(immutability)",
+        "file": "src/components/Dashboard/use-seven-tv-setup.ts",
+        "labels": [
+          {
+            "context": {
+              "current": "active = false",
+              "next": "stopPolling?.()",
+              "previous": "return () => {"
+            },
+            "span": "active",
+            "text": "Cannot reassign `active` after render completes"
+          },
+          {
+            "context": {
+              "current": "let active = true",
+              "next": "let stopPolling: (() => void) | undefined",
+              "previous": "useEffect(() => {"
+            },
+            "span": "active",
+            "text": "`active` is declared here"
+          }
+        ],
+        "message": "Cannot reassign variable after render completes",
+        "severity": "error"
+      }
+    },
     "71b3f4eb0743b9511f4160cf8901d7d1487be34dbe9d52489f5636a1f42a83d2": {
       "count": 1,
       "summary": {
@@ -61585,6 +61603,35 @@
           }
         ],
         "message": "This dictionary's unknown value type gives callers no concrete value contract. Use an owner/schema-derived value type; parse external payloads before insertion.",
+        "severity": "error"
+      }
+    },
+    "82585b392ec80c0f9a251d8d270a1bd9935cf5c2f3a299000a2b85cd65292aba": {
+      "count": 1,
+      "summary": {
+        "code": "react(immutability)",
+        "file": "src/lib/hooks/use-socket.tsx",
+        "labels": [
+          {
+            "context": {
+              "current": "resyncTimeout = null",
+              "next": "}",
+              "previous": "clearTimeout(resyncTimeout)"
+            },
+            "span": "resyncTimeout",
+            "text": "Cannot reassign `resyncTimeout` after render completes"
+          },
+          {
+            "context": {
+              "current": "let resyncTimeout: NodeJS.Timeout | null = null",
+              "next": "// Set once an outage outlasts the grace period, until the server sends a blocker again",
+              "previous": "let linkLossTimeout: NodeJS.Timeout | null = null"
+            },
+            "span": "resyncTimeout",
+            "text": "`resyncTimeout` is declared here"
+          }
+        ],
+        "message": "Cannot reassign variable after render completes",
         "severity": "error"
       }
     },
@@ -75555,26 +75602,6 @@
         "severity": "error"
       }
     },
-    "9f0174960e5f7d1526ac90974eaa4c34afeeea9701a5078bdd3dc10fa7169bdc": {
-      "count": 2,
-      "summary": {
-        "code": "react(immutability)",
-        "file": "src/__tests__/lib/hooks/use-update-setting.test.tsx",
-        "labels": [
-          {
-            "context": {
-              "current": "updateRef.current = updateSetting",
-              "next": "return null",
-              "previous": "})"
-            },
-            "span": "updateRef",
-            "text": "value cannot be modified"
-          }
-        ],
-        "message": "This value cannot be modified",
-        "severity": "error"
-      }
-    },
     "9f04a7c353c483a70463e626d2c1355702ed149aac4249b8a477d6714b2209e3": {
       "count": 1,
       "summary": {
@@ -76417,26 +76444,6 @@
           }
         ],
         "message": "This type assertion has no `SAFETY:` justification. State the checked invariant immediately before the assertion or its containing statement.",
-        "severity": "error"
-      }
-    },
-    "a05a2d0008cc16d6a6fb94905ac3363d270b358038f7e72f4ce25f4b843173a2": {
-      "count": 1,
-      "summary": {
-        "code": "react(immutability)",
-        "file": "src/__tests__/lib/hooks/use-update-setting.test.tsx",
-        "labels": [
-          {
-            "context": {
-              "current": "refs.updateSetting = result.updateSetting",
-              "next": "refs.isSaving = result.isSaving",
-              "previous": "})"
-            },
-            "span": "refs",
-            "text": "value cannot be modified"
-          }
-        ],
-        "message": "This value cannot be modified",
         "severity": "error"
       }
     },
@@ -77969,6 +77976,35 @@
         "severity": "error"
       }
     },
+    "a402a31e6a3b6bc00b69aa2dc194e6bd5b24198ddebe83c159e63e60267cf16a": {
+      "count": 1,
+      "summary": {
+        "code": "react(immutability)",
+        "file": "src/components/hub-spot.tsx",
+        "labels": [
+          {
+            "context": {
+              "current": "cancelled = true",
+              "next": "}",
+              "previous": "return () => {"
+            },
+            "span": "cancelled",
+            "text": "Cannot reassign `cancelled` after render completes"
+          },
+          {
+            "context": {
+              "current": "let cancelled = false",
+              "next": "",
+              "previous": "// Queued onReady callback from a superseded run becomes a no-op."
+            },
+            "span": "cancelled",
+            "text": "`cancelled` is declared here"
+          }
+        ],
+        "message": "Cannot reassign variable after render completes",
+        "severity": "error"
+      }
+    },
     "a40345805bcc57fcff78d3a9b06a32013e6a8f59d67379702c364c8823328349": {
       "count": 1,
       "summary": {
@@ -79316,26 +79352,6 @@
           }
         ],
         "message": "Unsafe member access .linked on an `any` value.",
-        "severity": "error"
-      }
-    },
-    "a67c90efc83f048f78a62a8a4f71fd6afb0cde6ad62c20a25ffd8cf3fabea319": {
-      "count": 1,
-      "summary": {
-        "code": "react(immutability)",
-        "file": "src/__tests__/lib/hooks/use-update-setting.test.tsx",
-        "labels": [
-          {
-            "context": {
-              "current": "refs.value = data",
-              "next": "return null",
-              "previous": "refs.updateSetting = updateSetting"
-            },
-            "span": "refs",
-            "text": "value cannot be modified"
-          }
-        ],
-        "message": "This value cannot be modified",
         "severity": "error"
       }
     },
@@ -114414,26 +114430,6 @@
         "severity": "error"
       }
     },
-    "efc4a466de5f3a4dedf3e1efb110e97bdb230d925f1dfe49bd0f8b6d9714ee35": {
-      "count": 1,
-      "summary": {
-        "code": "react(immutability)",
-        "file": "src/__tests__/lib/hooks/use-update-setting.test.tsx",
-        "labels": [
-          {
-            "context": {
-              "current": "refs.updateSetting = updateSetting",
-              "next": "refs.value = data",
-              "previous": "const { data, updateSetting } = useUpdateSetting<boolean | null>('chatters.tip')"
-            },
-            "span": "refs",
-            "text": "value cannot be modified"
-          }
-        ],
-        "message": "This value cannot be modified",
-        "severity": "error"
-      }
-    },
     "efcca7dee5b6670095475b01ec557e8c32709fb32a415e5383b31fc57029eab8": {
       "count": 1,
       "summary": {
@@ -121963,7 +121959,7 @@
     }
   },
   "policy": {
-    "oxlintVersion": "Version: 1.90.0",
+    "oxlintVersion": "Version: 1.91.0",
     "targets": [
       {
         "config": "oxlint.config.ts",
@@ -122529,8 +122525,12 @@
         "name": "app",
         "resolvedConfigSha256": "c0c208cf8ff15b7a20a4ff6c86712ca2289f5ddd5cc522b89a67ca1704f34fa1",
         "scope": {
-          "ignorePatterns": ["supabase/functions/**"],
-          "paths": ["."]
+          "ignorePatterns": [
+            "supabase/functions/**"
+          ],
+          "paths": [
+            "."
+          ]
         }
       },
       {
@@ -122553,7 +122553,9 @@
         "resolvedConfigSha256": "6c6c97b8453def202543b9830ada155f95f1a1375685319dec3501f5c65e59a1",
         "scope": {
           "ignorePatterns": [],
-          "paths": ["supabase/functions"]
+          "paths": [
+            "supabase/functions"
+          ]
         }
       }
     ],
