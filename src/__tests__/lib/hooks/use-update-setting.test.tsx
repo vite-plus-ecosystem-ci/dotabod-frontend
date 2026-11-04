@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/nextjs'
 import { act, render, waitFor } from '@testing-library/react'
 import useSWR from 'swr'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 import { useUpdate, useUpdateAccount, useUpdateSetting } from '@/lib/hooks/use-update-setting'
 

@@ -1,6 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import type { Subscription } from '@prisma/client'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vite-plus/test'
 
 import { hasCryptoInvoiceBeenCredited } from '@/lib/stripe/utils/crypto-invoice-credit'
 

@@ -1,7 +1,7 @@
 import type { NowPaymentsInvoice } from '@prisma/client'
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { createMocks } from 'node-mocks-http'
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vite-plus/test'
 
 import { sendNowPaymentsStatus } from '@/lib/nowpayments-payment-status'
 

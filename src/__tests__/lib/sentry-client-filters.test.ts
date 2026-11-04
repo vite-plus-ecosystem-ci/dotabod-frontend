@@ -1,5 +1,5 @@
 import type { StackFrame } from '@sentry/nextjs'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vite-plus/test'
 
 import { dropExtensionNoise } from '@/lib/sentry-client-filters'
 

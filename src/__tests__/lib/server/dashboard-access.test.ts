@@ -1,5 +1,5 @@
 import { getServerSession } from 'next-auth/next'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 import prisma from '@/lib/db'
 import { requireDashboardAccess } from '@/lib/server/dashboard-access'

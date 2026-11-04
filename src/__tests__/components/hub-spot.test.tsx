@@ -1,7 +1,7 @@
 import { render, waitFor } from '@testing-library/react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 import HubSpot from '@/components/hub-spot'
 

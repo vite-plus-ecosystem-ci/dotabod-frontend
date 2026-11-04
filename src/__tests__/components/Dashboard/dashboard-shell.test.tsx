@@ -3,7 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/router'
 import useSWR from 'swr'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vite-plus/test'
 
 import DashboardShell from '@/components/Dashboard/dashboard-shell'
 
