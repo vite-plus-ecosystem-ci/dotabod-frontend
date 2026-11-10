@@ -1,24 +1,24 @@
-import { render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vite-plus/test";
 
-import { TierSwitch } from '@/components/Dashboard/Features/tier-switch'
+import { TierSwitch } from "@/components/Dashboard/Features/tier-switch";
 
-vi.mock('@/lib/hooks/use-update-setting', () => ({
+vi.mock("@/lib/hooks/use-update-setting", () => ({
   useUpdateSetting: vi.fn(() => ({
     data: true,
     isSaving: false,
     tierAccess: { hasAccess: true, requiredTier: undefined },
     updateSetting: vi.fn(),
   })),
-}))
-vi.mock('@/components/Dashboard/Features/tier-badge', () => ({
+}));
+vi.mock("@/components/Dashboard/Features/tier-badge", () => ({
   TierBadge: () => null,
-}))
+}));
 
 describe(TierSwitch, () => {
-  it('uses its visible string label as the switch accessible name', () => {
-    render(<TierSwitch settingKey='commandToday' label='Use !today hero stats' />)
+  it("uses its visible string label as the switch accessible name", () => {
+    render(<TierSwitch settingKey="commandToday" label="Use !today hero stats" />);
 
-    expect(screen.getByRole('switch', { name: 'Use !today hero stats' })).toBeChecked()
-  })
-})
+    expect(screen.getByRole("switch", { name: "Use !today hero stats" })).toBeChecked();
+  });
+});

@@ -68,3 +68,4 @@ artifacts/
 /.build/
 .vinext/
 .wrangler/
+.vitest/
