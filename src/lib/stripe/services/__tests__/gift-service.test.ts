@@ -1,48 +1,48 @@
-import { runWithExecutionContext } from "vinext/shims/request-context";
-import { describe, expect, it, vi } from "vite-plus/test";
+import { runWithExecutionContext } from 'vinext/shims/request-context'
+import { describe, expect, it, vi } from 'vite-plus/test'
 
-import { scheduleGiftCreditAutoApply } from "../gift-service";
+import { scheduleGiftCreditAutoApply } from '../gift-service'
 
-type Apply = NonNullable<Parameters<typeof scheduleGiftCreditAutoApply>[1]>;
+type Apply = NonNullable<Parameters<typeof scheduleGiftCreditAutoApply>[1]>
 
-const input = { stripeCustomerId: "cus_recipient", userId: "user_recipient" };
+const input = { stripeCustomerId: 'cus_recipient', userId: 'user_recipient' }
 
 const scheduleInWorker = async (apply: Apply): Promise<Promise<unknown>[]> => {
-  const backgroundTasks: Promise<unknown>[] = [];
+  const backgroundTasks: Promise<unknown>[] = []
 
   await runWithExecutionContext(
     {
       waitUntil: (task: Promise<unknown>) => {
-        backgroundTasks.push(task);
+        backgroundTasks.push(task)
       },
     },
     async () => {
-      await scheduleGiftCreditAutoApply(input, apply);
+      await scheduleGiftCreditAutoApply(input, apply)
     },
-  );
+  )
 
-  return backgroundTasks;
-};
+  return backgroundTasks
+}
 
-describe("gift credit auto-apply", () => {
-  it("applies the recipient credit in this invocation and registers it with the Worker", async () => {
+describe('gift credit auto-apply', () => {
+  it('applies the recipient credit in this invocation and registers it with the Worker', async () => {
     const apply = vi
       .fn<Apply>()
-      .mockResolvedValue({ creditApplied: 6, kind: "applied", priceId: "price_monthly" });
+      .mockResolvedValue({ creditApplied: 6, kind: 'applied', priceId: 'price_monthly' })
 
-    const backgroundTasks = await scheduleInWorker(apply);
+    const backgroundTasks = await scheduleInWorker(apply)
 
-    expect(backgroundTasks).toHaveLength(1);
-    await Promise.all(backgroundTasks);
-    expect(apply).toHaveBeenCalledExactlyOnceWith(input);
-  });
+    expect(backgroundTasks).toHaveLength(1)
+    await Promise.all(backgroundTasks)
+    expect(apply).toHaveBeenCalledExactlyOnceWith(input)
+  })
 
-  it("keeps the webhook successful when applying the credit fails", async () => {
-    const apply = vi.fn<Apply>().mockRejectedValue(new Error("stripe unavailable"));
+  it('keeps the webhook successful when applying the credit fails', async () => {
+    const apply = vi.fn<Apply>().mockRejectedValue(new Error('stripe unavailable'))
 
-    const backgroundTasks = await scheduleInWorker(apply);
+    const backgroundTasks = await scheduleInWorker(apply)
 
-    await expect(Promise.all(backgroundTasks)).resolves.toHaveLength(1);
-    expect(apply).toHaveBeenCalledOnce();
-  });
-});
+    await expect(Promise.all(backgroundTasks)).resolves.toHaveLength(1)
+    expect(apply).toHaveBeenCalledOnce()
+  })
+})
