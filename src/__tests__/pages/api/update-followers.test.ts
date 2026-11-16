@@ -1,291 +1,291 @@
 // @ts-nocheck
 
-import { captureException } from '@sentry/nextjs'
-import { createMocks } from 'node-mocks-http'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { captureException } from "@sentry/nextjs";
+import { createMocks } from "node-mocks-http";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { getServerSession } from '@/lib/api/get-server-session'
-import prisma from '@/lib/db'
-import { getTwitchTokens } from '@/lib/get-twitch-tokens'
-import handler from '@/pages/api/update-followers'
+import { getServerSession } from "@/lib/api/get-server-session";
+import prisma from "@/lib/db";
+import { getTwitchTokens } from "@/lib/get-twitch-tokens";
+import handler from "@/pages/api/update-followers";
 
 // Mock the middleware
-vi.mock('@/lib/api-middlewares/with-authentication', () => ({
+vi.mock("@/lib/api-middlewares/with-authentication", () => ({
   withAuthentication: (handler) => handler,
-}))
+}));
 
-vi.mock('@/lib/api-middlewares/with-methods', () => ({
+vi.mock("@/lib/api-middlewares/with-methods", () => ({
   withMethods: (methods, handler) => (req, res) => {
     if (!methods.includes(req.method)) {
-      res.status(405).json({ message: 'Method not allowed' })
-      return
+      res.status(405).json({ message: "Method not allowed" });
+      return;
     }
-    return handler(req, res)
+    return handler(req, res);
   },
-}))
+}));
 
 // Mock the Prisma client
-vi.mock('@/lib/db', () => ({
+vi.mock("@/lib/db", () => ({
   default: {
     user: {
       update: vi.fn(),
     },
   },
-}))
+}));
 
 // Mock the Twitch tokens
-vi.mock('@/lib/get-twitch-tokens', () => ({
+vi.mock("@/lib/get-twitch-tokens", () => ({
   getTwitchTokens: vi.fn(),
-}))
+}));
 
 // Mock fetch for Twitch API
-global.fetch = vi.fn()
+global.fetch = vi.fn();
 
 // Mock Sentry
-vi.mock('@sentry/nextjs', () => ({
+vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
-}))
+}));
 
 // Mock the authentication
-vi.mock('@/lib/api/get-server-session', () => ({
+vi.mock("@/lib/api/get-server-session", () => ({
   getServerSession: vi.fn(),
-}))
+}));
 
-vi.mock('@/lib/auth', () => ({
+vi.mock("@/lib/auth", () => ({
   authOptions: {},
-}))
+}));
 
-describe('update-followers API', () => {
+describe("update-followers API", () => {
   beforeEach(() => {
-    vi.resetAllMocks()
+    vi.resetAllMocks();
 
     // Setup environment variables
-    vi.stubEnv('TWITCH_CLIENT_ID', 'mock-client-id')
-  })
+    vi.stubEnv("TWITCH_CLIENT_ID", "mock-client-id");
+  });
 
   afterEach(() => {
-    vi.clearAllMocks()
+    vi.clearAllMocks();
 
     // Clean up environment variables
-    vi.unstubAllEnvs()
-  })
+    vi.unstubAllEnvs();
+  });
 
-  it('returns 405 for non-GET methods', async () => {
+  it("returns 405 for non-GET methods", async () => {
     const { req, res } = createMocks({
-      method: 'POST',
-    })
+      method: "POST",
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(405)
-    expect(res._getJSONData()).toStrictEqual({ message: 'Method not allowed' })
-  })
+    expect(res.statusCode).toBe(405);
+    expect(res._getJSONData()).toStrictEqual({ message: "Method not allowed" });
+  });
 
-  it('returns 403 when user is not authenticated', async () => {
+  it("returns 403 when user is not authenticated", async () => {
     const { req, res } = createMocks({
-      method: 'GET',
-    })
+      method: "GET",
+    });
 
     // Mock getSession to return null (not authenticated)
-    vi.mocked(getServerSession).mockResolvedValueOnce(null)
+    vi.mocked(getServerSession).mockResolvedValueOnce(null);
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(403)
-  })
+    expect(res.statusCode).toBe(403);
+  });
 
-  it('returns 403 when user is impersonating', async () => {
+  it("returns 403 when user is impersonating", async () => {
     const { req, res } = createMocks({
-      method: 'GET',
-    })
+      method: "GET",
+    });
 
     // Mock getSession to return a user who is impersonating
     vi.mocked(getServerSession).mockResolvedValueOnce({
-      expires: '',
+      expires: "",
       user: {
-        id: 'user-123',
-        image: '',
+        id: "user-123",
+        image: "",
         isImpersonating: true,
-        locale: '',
-        name: '',
-        scope: '',
-        twitchId: '',
+        locale: "",
+        name: "",
+        scope: "",
+        twitchId: "",
       },
-    })
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(403)
-    expect(res._getJSONData()).toStrictEqual({ message: 'Forbidden' })
-  })
+    expect(res.statusCode).toBe(403);
+    expect(res._getJSONData()).toStrictEqual({ message: "Forbidden" });
+  });
 
-  it('successfully updates followers', async () => {
+  it("successfully updates followers", async () => {
     const { req, res } = createMocks({
-      method: 'GET',
-    })
+      method: "GET",
+    });
 
     // Mock getSession to return a user
     vi.mocked(getServerSession).mockResolvedValueOnce({
-      expires: '',
+      expires: "",
       user: {
-        id: 'user-123',
-        image: '',
+        id: "user-123",
+        image: "",
         isImpersonating: false,
-        locale: '',
-        name: '',
-        scope: '',
-        twitchId: '',
+        locale: "",
+        name: "",
+        scope: "",
+        twitchId: "",
       },
-    })
+    });
     // Mock getTwitchTokens to return tokens
     vi.mocked(getTwitchTokens).mockResolvedValueOnce({
-      accessToken: 'mock-access-token',
-      providerAccountId: '12345',
-    })
+      accessToken: "mock-access-token",
+      providerAccountId: "12345",
+    });
 
     // Mock fetch response for follower count
     vi.mocked(global.fetch).mockResolvedValueOnce({
       json: async () => Promise.resolve({ total: 100 }),
       ok: true,
-    } as unknown as Response)
+    } as unknown as Response);
 
     // Mock prisma.user.update
     vi.mocked(prisma.user.update).mockResolvedValueOnce({
       followers: 100,
-      id: 'user-123',
-    } as unknown as User)
+      id: "user-123",
+    } as unknown as User);
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(200)
-    expect(res._getData()).toBe('Followers updated successfully')
+    expect(res.statusCode).toBe(200);
+    expect(res._getData()).toBe("Followers updated successfully");
 
-    expect(getTwitchTokens).toHaveBeenCalledWith('user-123')
+    expect(getTwitchTokens).toHaveBeenCalledWith("user-123");
     expect(global.fetch).toHaveBeenCalledWith(
-      'https://api.twitch.tv/helix/channels/followers?broadcaster_id=12345',
+      "https://api.twitch.tv/helix/channels/followers?broadcaster_id=12345",
       {
         headers: {
-          Authorization: 'Bearer mock-access-token',
-          'Client-Id': 'mock-client-id',
+          Authorization: "Bearer mock-access-token",
+          "Client-Id": "mock-client-id",
         },
       },
-    )
-    expect(prisma.user.update).toHaveBeenCalledOnce()
-    const updateCall = vi.mocked(prisma.user.update).mock.calls[0][0]
-    expect(updateCall.where).toStrictEqual({ id: 'user-123' })
-    expect(updateCall.data.followers).toBe(100)
-    expect(updateCall.data.updatedAt).toBeDefined()
-  })
+    );
+    expect(prisma.user.update).toHaveBeenCalledOnce();
+    const updateCall = vi.mocked(prisma.user.update).mock.calls[0][0];
+    expect(updateCall.where).toStrictEqual({ id: "user-123" });
+    expect(updateCall.data.followers).toBe(100);
+    expect(updateCall.data.updatedAt).toBeDefined();
+  });
 
-  it('handles Twitch API errors gracefully', async () => {
+  it("handles Twitch API errors gracefully", async () => {
     const { req, res } = createMocks({
-      method: 'GET',
-    })
+      method: "GET",
+    });
 
     // Mock getSession to return a user
     vi.mocked(getServerSession).mockResolvedValueOnce({
-      expires: '',
+      expires: "",
       user: {
-        id: 'user-123',
-        image: '',
+        id: "user-123",
+        image: "",
         isImpersonating: false,
-        locale: '',
-        name: '',
-        scope: '',
-        twitchId: '',
+        locale: "",
+        name: "",
+        scope: "",
+        twitchId: "",
       },
-    })
+    });
     // Mock getTwitchTokens to return tokens
     vi.mocked(getTwitchTokens).mockResolvedValueOnce({
-      accessToken: 'mock-access-token',
-      providerAccountId: '12345',
-    })
+      accessToken: "mock-access-token",
+      providerAccountId: "12345",
+    });
 
     // Mock fetch response with error
     vi.mocked(global.fetch).mockResolvedValueOnce({
       ok: false,
-      statusText: 'Unauthorized',
-    } as unknown as Response)
+      statusText: "Unauthorized",
+    } as unknown as Response);
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(200)
-    expect(res._getData()).toBe('Followers updated successfully')
+    expect(res.statusCode).toBe(200);
+    expect(res._getData()).toBe("Followers updated successfully");
 
-    expect(getTwitchTokens).toHaveBeenCalledWith('user-123')
-    expect(global.fetch).toHaveBeenCalledOnce()
-    expect(captureException).toHaveBeenCalledOnce()
-  })
+    expect(getTwitchTokens).toHaveBeenCalledWith("user-123");
+    expect(global.fetch).toHaveBeenCalledOnce();
+    expect(captureException).toHaveBeenCalledOnce();
+  });
 
-  it('handles Twitch token errors gracefully', async () => {
+  it("handles Twitch token errors gracefully", async () => {
     const { req, res } = createMocks({
-      method: 'GET',
-    })
+      method: "GET",
+    });
 
     // Mock getSession to return a user
     vi.mocked(getServerSession).mockResolvedValueOnce({
-      expires: '',
+      expires: "",
       user: {
-        id: 'user-123',
-        image: '',
+        id: "user-123",
+        image: "",
         isImpersonating: false,
-        locale: '',
-        name: '',
-        scope: '',
-        twitchId: '',
+        locale: "",
+        name: "",
+        scope: "",
+        twitchId: "",
       },
-    })
+    });
     // Mock getTwitchTokens to return an error
     vi.mocked(getTwitchTokens).mockResolvedValueOnce({
-      error: 'Twitch token error',
-      message: 'Failed to get Twitch tokens',
-    })
+      error: "Twitch token error",
+      message: "Failed to get Twitch tokens",
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
-    expect(res.statusCode).toBe(200)
-    expect(res._getData()).toBe('Followers updated successfully')
+    expect(res.statusCode).toBe(200);
+    expect(res._getData()).toBe("Followers updated successfully");
 
-    expect(getTwitchTokens).toHaveBeenCalledWith('user-123')
-    expect(global.fetch).not.toHaveBeenCalled()
-  })
+    expect(getTwitchTokens).toHaveBeenCalledWith("user-123");
+    expect(global.fetch).not.toHaveBeenCalled();
+  });
 
-  it('handles unexpected errors', async () => {
+  it("handles unexpected errors", async () => {
     const { req, res } = createMocks({
-      method: 'GET',
-    })
+      method: "GET",
+    });
 
     // Mock console.error to prevent test output noise
-    const originalConsoleError = console.error
-    console.error = vi.fn()
+    const originalConsoleError = console.error;
+    console.error = vi.fn();
 
     // Mock getServerSession to return a user
     vi.mocked(getServerSession).mockResolvedValueOnce({
-      expires: '',
+      expires: "",
       user: {
-        id: 'user-123',
-        image: '',
+        id: "user-123",
+        image: "",
         isImpersonating: false,
-        locale: '',
-        name: '',
-        scope: '',
-        twitchId: '',
+        locale: "",
+        name: "",
+        scope: "",
+        twitchId: "",
       },
-    })
+    });
 
     // Mock getTwitchTokens to throw an error
     vi.mocked(getTwitchTokens).mockImplementationOnce(() => {
-      throw new Error('Unexpected error')
-    })
+      throw new Error("Unexpected error");
+    });
 
-    await handler(req, res)
+    await handler(req, res);
 
     // Restore console.error
-    console.error = originalConsoleError
+    console.error = originalConsoleError;
 
-    expect(res.statusCode).toBe(500)
-    expect(res._getData()).toBe('Failed to update followers')
+    expect(res.statusCode).toBe(500);
+    expect(res._getData()).toBe("Failed to update followers");
 
-    expect(captureException).toHaveBeenCalledOnce()
-  })
-})
+    expect(captureException).toHaveBeenCalledOnce();
+  });
+});
