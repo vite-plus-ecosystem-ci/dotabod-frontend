@@ -1,28 +1,28 @@
-import { afterEach, describe, expect, it, vi } from "vite-plus/test";
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test'
 
-import { getSubscription, PayPalApiError } from "@/lib/paypal";
+import { getSubscription, PayPalApiError } from '@/lib/paypal'
 
 describe(getSubscription, () => {
   afterEach(() => {
-    vi.unstubAllGlobals();
-  });
+    vi.unstubAllGlobals()
+  })
 
-  it("carries the status of a failed PayPal request", async () => {
-    vi.stubEnv("PAYPAL_API_BASE", "https://paypal.test");
-    vi.stubEnv("PAYPAL_CLIENT_ID", "client");
-    vi.stubEnv("PAYPAL_CLIENT_SECRET", "secret");
+  it('carries the status of a failed PayPal request', async () => {
+    vi.stubEnv('PAYPAL_API_BASE', 'https://paypal.test')
+    vi.stubEnv('PAYPAL_CLIENT_ID', 'client')
+    vi.stubEnv('PAYPAL_CLIENT_SECRET', 'secret')
     vi.stubGlobal(
-      "fetch",
+      'fetch',
       vi
         .fn<typeof fetch>()
-        .mockResolvedValueOnce(Response.json({ access_token: "token" }))
-        .mockResolvedValueOnce(Response.json({ name: "RESOURCE_NOT_FOUND" }, { status: 404 })),
-    );
+        .mockResolvedValueOnce(Response.json({ access_token: 'token' }))
+        .mockResolvedValueOnce(Response.json({ name: 'RESOURCE_NOT_FOUND' }, { status: 404 })),
+    )
 
-    const request = getSubscription("I-UNKNOWN");
+    const request = getSubscription('I-UNKNOWN')
 
-    await expect(request).rejects.toBeInstanceOf(PayPalApiError);
-    await expect(request).rejects.toMatchObject({ status: 404 });
-    await expect(request).rejects.toThrow("RESOURCE_NOT_FOUND");
-  });
-});
+    await expect(request).rejects.toBeInstanceOf(PayPalApiError)
+    await expect(request).rejects.toMatchObject({ status: 404 })
+    await expect(request).rejects.toThrow('RESOURCE_NOT_FOUND')
+  })
+})
