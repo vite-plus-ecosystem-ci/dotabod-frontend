@@ -1,46 +1,46 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { cancelReplacedSubscription } from '@/lib/stripe/utils/replaced-subscription'
+import { cancelReplacedSubscription } from "@/lib/stripe/utils/replaced-subscription";
 
-type Cancel = Parameters<typeof cancelReplacedSubscription>[0]['cancel']
+type Cancel = Parameters<typeof cancelReplacedSubscription>[0]["cancel"];
 
 describe(cancelReplacedSubscription, () => {
-  const cancel = vi.fn<Cancel>()
+  const cancel = vi.fn<Cancel>();
 
   beforeEach(() => {
-    cancel.mockReset()
-    cancel.mockResolvedValue({ id: 'sub_monthly_past_due' })
-  })
+    cancel.mockReset();
+    cancel.mockResolvedValue({ id: "sub_monthly_past_due" });
+  });
 
-  it('cancels the past due subscription the new plan replaces', async () => {
-    await cancelReplacedSubscription({ cancel }, 'sub_monthly_past_due', 'sub_annual')
+  it("cancels the past due subscription the new plan replaces", async () => {
+    await cancelReplacedSubscription({ cancel }, "sub_monthly_past_due", "sub_annual");
 
-    expect(cancel).toHaveBeenCalledExactlyOnceWith('sub_monthly_past_due', {
+    expect(cancel).toHaveBeenCalledExactlyOnceWith("sub_monthly_past_due", {
       invoice_now: false,
       prorate: true,
-    })
-  })
+    });
+  });
 
   it.each([
-    ['there is nothing to replace', undefined],
-    ['the previous subscription id is empty', ''],
-    ['the previous subscription is the new one', 'sub_annual'],
+    ["there is nothing to replace", undefined],
+    ["the previous subscription id is empty", ""],
+    ["the previous subscription is the new one", "sub_annual"],
     [
-      'the previous subscription is a crypto record rather than a Stripe subscription',
-      'crypto_cs_1',
+      "the previous subscription is a crypto record rather than a Stripe subscription",
+      "crypto_cs_1",
     ],
-  ])('leaves Stripe alone when %s', async (_reason, previousSubscriptionId) => {
-    await cancelReplacedSubscription({ cancel }, previousSubscriptionId, 'sub_annual')
+  ])("leaves Stripe alone when %s", async (_reason, previousSubscriptionId) => {
+    await cancelReplacedSubscription({ cancel }, previousSubscriptionId, "sub_annual");
 
-    expect(cancel).not.toHaveBeenCalled()
-  })
+    expect(cancel).not.toHaveBeenCalled();
+  });
 
-  it('does not throw when Stripe refuses the cancel', async () => {
-    cancel.mockRejectedValue(new Error('already canceled'))
+  it("does not throw when Stripe refuses the cancel", async () => {
+    cancel.mockRejectedValue(new Error("already canceled"));
 
     await expect(
-      cancelReplacedSubscription({ cancel }, 'sub_monthly_past_due', 'sub_annual'),
-    ).resolves.toBeUndefined()
-    expect(cancel).toHaveBeenCalledOnce()
-  })
-})
+      cancelReplacedSubscription({ cancel }, "sub_monthly_past_due", "sub_annual"),
+    ).resolves.toBeUndefined();
+    expect(cancel).toHaveBeenCalledOnce();
+  });
+});

@@ -1,57 +1,57 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-const ctorSpy = vi.fn()
+const ctorSpy = vi.fn();
 
-vi.mock('stripe', () => {
+vi.mock("stripe", () => {
   const MockStripe = class {
-    customers = { retrieve: vi.fn() }
+    customers = { retrieve: vi.fn() };
     constructor(...args: unknown[]) {
-      ctorSpy(...args)
+      ctorSpy(...args);
     }
-  }
+  };
 
-  return { Stripe: MockStripe, default: MockStripe }
-})
+  return { Stripe: MockStripe, default: MockStripe };
+});
 
 const load = async function load() {
-  return await import('@/lib/stripe-server')
-}
+  return await import("@/lib/stripe-server");
+};
 
-describe('lib/stripe-server', () => {
+describe("lib/stripe-server", () => {
   beforeEach(() => {
-    vi.resetModules()
-    ctorSpy.mockClear()
-  })
+    vi.resetModules();
+    ctorSpy.mockClear();
+  });
 
   afterEach(() => {
-    vi.unstubAllEnvs()
-  })
+    vi.unstubAllEnvs();
+  });
 
-  it('does not throw on import when STRIPE_SECRET_KEY is missing', async () => {
-    vi.stubEnv('STRIPE_SECRET_KEY', '')
-    await expect(load()).resolves.toBeDefined()
-    expect(ctorSpy).not.toHaveBeenCalled()
-  })
+  it("does not throw on import when STRIPE_SECRET_KEY is missing", async () => {
+    vi.stubEnv("STRIPE_SECRET_KEY", "");
+    await expect(load()).resolves.toBeDefined();
+    expect(ctorSpy).not.toHaveBeenCalled();
+  });
 
-  it('throws only when the client is actually used without a key', async () => {
-    vi.stubEnv('STRIPE_SECRET_KEY', '')
-    const { stripe } = await load()
-    expect(() => stripe.customers).toThrow('Missing STRIPE_SECRET_KEY environment variable')
-  })
+  it("throws only when the client is actually used without a key", async () => {
+    vi.stubEnv("STRIPE_SECRET_KEY", "");
+    const { stripe } = await load();
+    expect(() => stripe.customers).toThrow("Missing STRIPE_SECRET_KEY environment variable");
+  });
 
-  it('lazily constructs and memoizes the client when a key is present', async () => {
-    vi.stubEnv('STRIPE_SECRET_KEY', 'sk_test_123')
-    const { stripe } = await load()
+  it("lazily constructs and memoizes the client when a key is present", async () => {
+    vi.stubEnv("STRIPE_SECRET_KEY", "sk_test_123");
+    const { stripe } = await load();
 
-    expect(ctorSpy).not.toHaveBeenCalled()
+    expect(ctorSpy).not.toHaveBeenCalled();
 
-    expect(stripe.customers).toBeDefined()
-    void stripe.customers
+    expect(stripe.customers).toBeDefined();
+    void stripe.customers;
 
-    expect(ctorSpy).toHaveBeenCalledOnce()
-    expect(ctorSpy).toHaveBeenCalledWith('sk_test_123', {
-      apiVersion: '2025-03-31.basil',
+    expect(ctorSpy).toHaveBeenCalledOnce();
+    expect(ctorSpy).toHaveBeenCalledWith("sk_test_123", {
+      apiVersion: "2025-03-31.basil",
       typescript: true,
-    })
-  })
-})
+    });
+  });
+});

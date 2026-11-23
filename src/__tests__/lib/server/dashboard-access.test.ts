@@ -1,60 +1,60 @@
-import { getServerSession } from 'next-auth/next'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { getServerSession } from "next-auth/next";
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import prisma from '@/lib/db'
-import { requireDashboardAccess } from '@/lib/server/dashboard-access'
+import prisma from "@/lib/db";
+import { requireDashboardAccess } from "@/lib/server/dashboard-access";
 
-vi.mock('next-auth/next', () => ({
+vi.mock("next-auth/next", () => ({
   getServerSession: vi.fn(),
-}))
+}));
 
-vi.mock('@/lib/auth', () => ({
+vi.mock("@/lib/auth", () => ({
   authOptions: {},
-}))
+}));
 
-vi.mock('@/lib/db', () => ({
+vi.mock("@/lib/db", () => ({
   default: {
     user: {
       findUnique: vi.fn(),
     },
   },
-}))
+}));
 
-const ctx = { req: {}, res: {} } as any
+const ctx = { req: {}, res: {} } as any;
 
 beforeEach(() => {
-  vi.clearAllMocks()
-})
+  vi.clearAllMocks();
+});
 
 describe(requireDashboardAccess, () => {
-  it('redirects to /error?error=ACCOUNT_BANNED when users.bannedAt is set', async () => {
+  it("redirects to /error?error=ACCOUNT_BANNED when users.bannedAt is set", async () => {
     vi.mocked(getServerSession).mockResolvedValue({
-      user: { id: 'user-banned', role: 'user' },
-    })
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ bannedAt: new Date() } as any)
+      user: { id: "user-banned", role: "user" },
+    });
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ bannedAt: new Date() } as any);
 
-    const result = (await requireDashboardAccess()(ctx)) as { redirect: { destination: string } }
+    const result = (await requireDashboardAccess()(ctx)) as { redirect: { destination: string } };
 
-    expect(result.redirect.destination).toBe('/error?error=ACCOUNT_BANNED')
-  })
+    expect(result.redirect.destination).toBe("/error?error=ACCOUNT_BANNED");
+  });
 
-  it('passes through when bannedAt is null', async () => {
+  it("passes through when bannedAt is null", async () => {
     vi.mocked(getServerSession).mockResolvedValue({
-      user: { id: 'user-ok', role: 'user' },
-    })
-    vi.mocked(prisma.user.findUnique).mockResolvedValue({ bannedAt: null } as any)
+      user: { id: "user-ok", role: "user" },
+    });
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ bannedAt: null } as any);
 
-    const result = (await requireDashboardAccess()(ctx)) as { props: Record<string, unknown> }
+    const result = (await requireDashboardAccess()(ctx)) as { props: Record<string, unknown> };
 
-    expect(result.props).toStrictEqual({})
-  })
+    expect(result.props).toStrictEqual({});
+  });
 
-  it('redirects to /login when there is no session (skips ban check entirely)', async () => {
-    vi.mocked(getServerSession).mockResolvedValue(null)
+  it("redirects to /login when there is no session (skips ban check entirely)", async () => {
+    vi.mocked(getServerSession).mockResolvedValue(null);
 
-    const result = (await requireDashboardAccess()(ctx)) as { redirect: { destination: string } }
+    const result = (await requireDashboardAccess()(ctx)) as { redirect: { destination: string } };
 
-    expect(result.redirect.destination).toBe('/login')
-    expect(prisma.user.findUnique).not.toHaveBeenCalled()
-  })
-})
+    expect(result.redirect.destination).toBe("/login");
+    expect(prisma.user.findUnique).not.toHaveBeenCalled();
+  });
+});

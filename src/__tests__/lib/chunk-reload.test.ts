@@ -1,37 +1,37 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from "vite-plus/test";
 
-import { reloadAfterChunkError } from '@/lib/chunk-reload'
+import { reloadAfterChunkError } from "@/lib/chunk-reload";
 
-const page = () => ({ reload: vi.fn<() => void>() })
+const page = () => ({ reload: vi.fn<() => void>() });
 
 describe(reloadAfterChunkError, () => {
   beforeEach(() => {
-    sessionStorage.clear()
-  })
+    sessionStorage.clear();
+  });
 
-  it('reloads a page whose chunk failed to load', () => {
-    const current = page()
+  it("reloads a page whose chunk failed to load", () => {
+    const current = page();
 
-    reloadAfterChunkError(current, sessionStorage, 1_000_000)
+    reloadAfterChunkError(current, sessionStorage, 1_000_000);
 
-    expect(current.reload).toHaveBeenCalledOnce()
-  })
+    expect(current.reload).toHaveBeenCalledOnce();
+  });
 
-  it('does not reload again within a minute', () => {
-    const current = page()
+  it("does not reload again within a minute", () => {
+    const current = page();
 
-    reloadAfterChunkError(current, sessionStorage, 1_000_000)
-    reloadAfterChunkError(current, sessionStorage, 1_030_000)
+    reloadAfterChunkError(current, sessionStorage, 1_000_000);
+    reloadAfterChunkError(current, sessionStorage, 1_030_000);
 
-    expect(current.reload).toHaveBeenCalledOnce()
-  })
+    expect(current.reload).toHaveBeenCalledOnce();
+  });
 
-  it('reloads again once a minute has passed', () => {
-    const current = page()
+  it("reloads again once a minute has passed", () => {
+    const current = page();
 
-    reloadAfterChunkError(current, sessionStorage, 1_000_000)
-    reloadAfterChunkError(current, sessionStorage, 1_060_000)
+    reloadAfterChunkError(current, sessionStorage, 1_000_000);
+    reloadAfterChunkError(current, sessionStorage, 1_060_000);
 
-    expect(current.reload).toHaveBeenCalledTimes(2)
-  })
-})
+    expect(current.reload).toHaveBeenCalledTimes(2);
+  });
+});
